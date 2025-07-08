@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,10 +31,12 @@ import { ProfileManagement } from "@/components/ProfileManagement";
 import { AchievementSystem } from "@/components/AchievementSystem";
 import { useChallenges } from "@/hooks/useChallenges";
 import { Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
+  const [searchParams] = useSearchParams();
   const { 
     profile, 
     userChallenges, 
@@ -46,6 +49,15 @@ export default function Dashboard() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedChallengeForProgress, setSelectedChallengeForProgress] = useState<any>(null);
 
+  // Handle tab switching from URL params
+  const [activeTab, setActiveTab] = useState("active");
+  
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['active', 'created', 'completed', 'profile'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   const handleEditChallenge = (challenge: ChallengeWithCreator) => {
     setEditingChallenge(challenge);
     setEditModalOpen(true);
@@ -181,7 +193,7 @@ export default function Dashboard() {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="active" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="active">Active Challenges</TabsTrigger>
             <TabsTrigger value="created">My Challenges</TabsTrigger>

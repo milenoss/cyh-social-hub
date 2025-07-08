@@ -1,11 +1,16 @@
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Target, User, Trophy, Users, LogOut } from "lucide-react";
+import { useDashboard } from "@/hooks/useDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 export function Navigation() {
   const { user, signOut } = useAuth();
+  const { profile, stats } = useDashboard();
   const { toast } = useToast();
 
   const handleSignOut = async () => {
@@ -66,16 +71,113 @@ export function Navigation() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/dashboard">
                     <Target className="h-4 w-4" />
-                    Dashboard
+                    <span className="hidden sm:inline ml-2">Dashboard</span>
                   </Link>
                 </Button>
-                <Button variant="ghost" size="sm">
-                  <User className="h-4 w-4" />
-                  Profile
-                </Button>
+                
+                {/* Profile Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={profile?.avatar_url || ""} />
+                        <AvatarFallback className="text-xs">
+                          {profile?.display_name?.[0] || profile?.username?.[0] || user.email?.[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden sm:inline">
+                        {profile?.display_name || profile?.username || 'Profile'}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80">
+                    {/* Profile Header */}
+                    <div className="p-4 border-b">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={profile?.avatar_url || ""} />
+                          <AvatarFallback className="text-lg">
+                            {profile?.display_name?.[0] || profile?.username?.[0] || user.email?.[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {profile?.display_name || profile?.username || 'User'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          {profile?.bio && (
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                              {profile.bio}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="p-3 border-b">
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                        <div>
+                          <p className="text-lg font-bold text-primary">{stats.challengesCompleted}</p>
+                          <p className="text-xs text-muted-foreground">Completed</p>
+                        </div>
+                        <div>
+                          <p className="text-lg font-bold text-orange-600">{stats.currentStreak}</p>
+                          <p className="text-xs text-muted-foreground">Streak</p>
+                        </div>
+                        <div>
+                          <p className="text-lg font-bold text-green-600">{stats.activeChallenges}</p>
+                          <p className="text-xs text-muted-foreground">Active</p>
+                        </div>
+                        <div>
+                          <p className="text-lg font-bold text-blue-600">{stats.totalPoints}</p>
+                          <p className="text-xs text-muted-foreground">Points</p>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Menu Items */}
+                    <div className="p-1">
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard" className="flex items-center gap-2 w-full">
+                          <Target className="h-4 w-4" />
+                          Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard" onClick={() => window.location.href = '/dashboard?tab=profile'} className="flex items-center gap-2 w-full">
+                          <User className="h-4 w-4" />
+                          Profile Settings
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard" onClick={() => window.location.href = '/dashboard?tab=created'} className="flex items-center gap-2 w-full">
+                          <Trophy className="h-4 w-4" />
+                          My Challenges
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard" onClick={() => window.location.href = '/dashboard?tab=completed'} className="flex items-center gap-2 w-full">
+                          <Trophy className="h-4 w-4" />
+                          Achievements
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuSeparator />
+                      
+                      <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
+                      </DropdownMenuItem>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" />
-                  Sign Out
+                  <span className="hidden sm:inline ml-2">Sign Out</span>
                 </Button>
               </>
             ) : (
