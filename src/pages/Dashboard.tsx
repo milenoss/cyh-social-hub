@@ -26,6 +26,8 @@ import { ChallengeCard } from "@/components/ChallengeCard";
 import { CreateChallengeDialog } from "@/components/CreateChallengeDialog";
 import { EditChallengeModal } from "@/components/EditChallengeModal";
 import { ProgressTracker } from "@/components/ProgressTracker";
+import { ProfileManagement } from "@/components/ProfileManagement";
+import { AchievementSystem } from "@/components/AchievementSystem";
 import { useChallenges } from "@/hooks/useChallenges";
 import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -358,92 +360,38 @@ export default function Dashboard() {
           </TabsContent>
 
           {/* Profile Tab */}
-          <TabsContent value="profile" className="space-y-6">
-            <h2 className="text-2xl font-bold">Profile Settings</h2>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Profile Info */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>
-                    Update your profile details and preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={profile?.avatar_url || ""} />
-                      <AvatarFallback className="text-xl">
-                        {profile?.display_name?.[0] || profile?.username?.[0] || user.email?.[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <Button variant="outline" size="sm">
-                        Change Avatar
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <p><strong>Display Name:</strong> {profile?.display_name || 'Not set'}</p>
-                    <p><strong>Username:</strong> {profile?.username || 'Not set'}</p>
-                    <p><strong>Email:</strong> {user.email}</p>
-                    <p><strong>Bio:</strong> {profile?.bio || 'No bio yet'}</p>
-                  </div>
-
-                  <Button variant="outline" className="w-full">
-                    <Settings className="h-4 w-4" />
-                    Edit Profile
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Achievement Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Achievement Summary</CardTitle>
-                  <CardDescription>
-                    Your progress and milestones
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-4 bg-muted/50 rounded-lg">
-                      <Trophy className="h-8 w-8 text-primary mx-auto mb-2" />
-                      <p className="text-2xl font-bold">{stats.challengesCompleted}</p>
-                      <p className="text-sm text-muted-foreground">Completed</p>
-                    </div>
-                    <div className="text-center p-4 bg-muted/50 rounded-lg">
-                      <Flame className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                      <p className="text-2xl font-bold">{stats.longestStreak}</p>
-                      <p className="text-sm text-muted-foreground">Best Streak</p>
-                    </div>
-                    <div className="text-center p-4 bg-muted/50 rounded-lg">
-                      <Target className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                      <p className="text-2xl font-bold">{userChallenges.length}</p>
-                      <p className="text-sm text-muted-foreground">Created</p>
-                    </div>
-                    <div className="text-center p-4 bg-muted/50 rounded-lg">
-                      <Award className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                      <p className="text-2xl font-bold">{stats.totalPoints}</p>
-                      <p className="text-sm text-muted-foreground">Total Points</p>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t">
-                    <p className="text-sm text-muted-foreground mb-2">Member since</p>
-                    <p className="font-medium">
-                      {new Date(profile?.created_at || '').toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="profile">
+            <Tabs defaultValue="settings" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="settings">Profile Settings</TabsTrigger>
+                <TabsTrigger value="achievements">Achievements</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="settings">
+                <ProfileManagement 
+                  profile={profile}
+                  onUpdateProfile={async (updates) => {
+                    // TODO: Implement profile update
+                    console.log('Profile updates:', updates);
+                  }}
+                />
+              </TabsContent>
+              
+              <TabsContent value="achievements">
+                <AchievementSystem 
+                  userId={user.id}
+                  userStats={{
+                    challengesCompleted: stats.challengesCompleted,
+                    challengesCreated: userChallenges.length,
+                    currentStreak: stats.currentStreak,
+                    longestStreak: stats.longestStreak,
+                    totalPoints: stats.totalPoints,
+                    friendsHelped: 3, // Mock data
+                    commentsPosted: 12 // Mock data
+                  }}
+                />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
 

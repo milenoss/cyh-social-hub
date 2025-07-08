@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChallengeComments } from "./ChallengeComments";
 import { 
   Users, 
   Clock, 
@@ -353,13 +354,10 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
             </TabsContent>
 
             <TabsContent value="discussion" className="space-y-4">
-              <div className="text-center py-8">
-                <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Discussion Coming Soon</h3>
-                <p className="text-muted-foreground">
-                  Challenge discussions and comments will be available in the next update.
-                </p>
-              </div>
+              <ChallengeComments 
+                challengeId={challenge.id} 
+                challengeOwnerId={challenge.created_by}
+              />
             </TabsContent>
           </Tabs>
         </div>
