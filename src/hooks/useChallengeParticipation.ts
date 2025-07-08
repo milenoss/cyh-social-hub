@@ -28,7 +28,10 @@ export function useChallengeParticipation(challengeId?: string) {
 
       setParticipation(data || null);
     } catch (error: any) {
-      console.error('Error fetching participation:', error);
+      // Only log errors that are not "no rows found" (PGRST116)
+      if (error.code !== 'PGRST116') {
+        console.error('Error fetching participation:', error);
+      }
     } finally {
       setLoading(false);
     }
