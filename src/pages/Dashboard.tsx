@@ -22,6 +22,8 @@ import {
   Flame
 } from "lucide-react";
 import { useDashboard } from "@/hooks/useDashboard";
+import { useProfile } from "@/hooks/useProfile";
+import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { CreateChallengeDialog } from "@/components/CreateChallengeDialog";
 import { EditChallengeModal } from "@/components/EditChallengeModal";
@@ -38,6 +40,9 @@ export default function Dashboard() {
   const [searchParams] = useSearchParams();
   const { 
     profile, 
+    updateProfile
+  } = useProfile();
+  const { 
     userChallenges, 
     participatedChallenges, 
     stats, 
@@ -47,6 +52,7 @@ export default function Dashboard() {
   const [editingChallenge, setEditingChallenge] = useState<ChallengeWithCreator | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedChallengeForProgress, setSelectedChallengeForProgress] = useState<any>(null);
+  const { updateProgress } = useChallengeParticipation(selectedChallengeForProgress?.challenge_id);
 
   // Handle tab switching from URL params
   const [activeTab, setActiveTab] = useState("active");
@@ -71,8 +77,7 @@ export default function Dashboard() {
   };
 
   const handleProgressUpdate = (progress: number, note?: string) => {
-    // TODO: Implement progress update in database
-    console.log('Progress update:', { progress, note });
+    return updateProgress(progress, note);
   };
 
   if (authLoading || loading) {
@@ -381,10 +386,7 @@ export default function Dashboard() {
               <TabsContent value="settings">
                 <ProfileManagement 
                   profile={profile}
-                  onUpdateProfile={async (updates) => {
-                    // TODO: Implement profile update
-                    console.log('Profile updates:', updates);
-                  }}
+                  onUpdateProfile={updateProfile}
                 />
               </TabsContent>
               
@@ -418,6 +420,7 @@ export default function Dashboard() {
               </DialogHeader>
               <ProgressTracker
                 challengeId={selectedChallengeForProgress.challenge_id}
+                participation={selectedChallengeForProgress}
                 challengeTitle={selectedChallengeForProgress.challenge.title}
                 duration={selectedChallengeForProgress.challenge.duration_days}
                 currentProgress={selectedChallengeForProgress.progress}

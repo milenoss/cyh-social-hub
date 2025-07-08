@@ -5,6 +5,7 @@ import { Users, Clock, Target, Edit, Trash2, MoreHorizontal } from "lucide-react
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChallengeWithCreator } from "@/lib/supabase-types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
 
 interface ChallengeCardProps {
   challenge: ChallengeWithCreator;
@@ -29,10 +30,16 @@ const difficultyLabels: Record<string, string> = {
 
 export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: ChallengeCardProps) {
   const { user } = useAuth();
+  const { participation, joinChallenge, loading } = useChallengeParticipation(challenge.id);
   const isOwner = user?.id === challenge.created_by;
+  const hasJoined = !!participation;
 
   const handleJoin = () => {
-    onJoin?.(challenge.id);
+    if (hasJoined) {
+      // Already joined, maybe show progress or details
+      return;
+    }
+    joinChallenge();
   };
 
   const handleEdit = () => {
@@ -129,15 +136,29 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
       </CardContent>
       
       <CardFooter className="pt-0">
-        {!isOwner && (
+        {!isOwner && !hasJoined && (
           <Button 
             className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
             variant="challenge"
-            onClick={(e) => { handleCardClick(e); handleJoin(); }}
+            onClick={(e) => { 
+              handleCardClick(e); 
+              handleJoin(); 
+            }}
+            disabled={loading}
           >
             <Target className="h-4 w-4" />
-            Accept Challenge
+            {loading ? "Joining..." : "Accept Challenge"}
           </Button>
+        )}
+        {!isOwner && hasJoined && (
+          <div className="w-full text-center">
+            <div className="text-sm text-green-600 font-medium mb-1">
+              ✓ Joined
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Progress: {participation?.progress || 0}%
+            </div>
+          </div>
         )}
         {isOwner && (
           <div className="w-full text-center text-sm text-muted-foreground">

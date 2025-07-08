@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import { ChallengeWithCreator, Profile, ChallengeParticipant } from '@/lib/supabase-types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,7 +18,7 @@ interface ChallengeParticipationWithChallenge extends ChallengeParticipant {
 }
 
 export function useDashboard() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { profile } = useProfile();
   const [userChallenges, setUserChallenges] = useState<ChallengeWithCreator[]>([]);
   const [participatedChallenges, setParticipatedChallenges] = useState<ChallengeParticipationWithChallenge[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
@@ -30,23 +31,6 @@ export function useDashboard() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
-
-  const fetchProfile = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
-    } catch (error: any) {
-      console.error('Error fetching profile:', error);
-    }
-  };
 
   const fetchUserChallenges = async () => {
     if (!user) return;
@@ -140,7 +124,6 @@ export function useDashboard() {
     setLoading(true);
     try {
       await Promise.all([
-        fetchProfile(),
         fetchUserChallenges(),
         fetchParticipatedChallenges()
       ]);

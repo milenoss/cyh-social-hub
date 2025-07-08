@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChallengeComments } from "./ChallengeComments";
+import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
 import { 
   Users, 
   Clock, 
@@ -57,12 +58,13 @@ const mockParticipants = [
 
 export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }: ChallengeDetailsModalProps) {
   const { user } = useAuth();
+  const { participation, joinChallenge, leaveChallenge, loading: participationLoading } = useChallengeParticipation(challenge?.id);
   const [activeTab, setActiveTab] = useState("overview");
 
   if (!challenge) return null;
 
   const isOwner = user?.id === challenge.created_by;
-  const hasJoined = false; // TODO: Check if user has joined this challenge
+  const hasJoined = !!participation;
 
   const handleJoin = () => {
     if (!user) {
@@ -70,7 +72,12 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
       window.location.href = '/auth';
       return;
     }
-    onJoin?.(challenge.id);
+    
+    if (hasJoined) {
+      leaveChallenge();
+    } else {
+      joinChallenge();
+    }
   };
 
   const completedParticipants = mockParticipants.filter(p => p.status === 'completed').length;
@@ -157,14 +164,26 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
           {!isOwner && (
             <div className="flex justify-center">
               {hasJoined ? (
-                <Button size="lg" variant="outline" className="min-w-[200px]">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  onClick={handleJoin}
+                  disabled={participationLoading}
+                  className="min-w-[200px]"
+                >
                   <Pause className="h-5 w-5" />
-                  Leave Challenge
+                  {participationLoading ? "Loading..." : "Leave Challenge"}
                 </Button>
               ) : (
-                <Button size="lg" variant="hero" onClick={handleJoin} className="min-w-[200px]">
+                <Button 
+                  size="lg" 
+                  variant="hero" 
+                  onClick={handleJoin}
+                  disabled={participationLoading}
+                  className="min-w-[200px]"
+                >
                   <Target className="h-5 w-5" />
-                  Accept Challenge
+                  {participationLoading ? "Loading..." : "Accept Challenge"}
                 </Button>
               )}
             </div>
@@ -229,20 +248,19 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
 
             <TabsContent value="participants" className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Participants ({mockParticipants.length})</h3>
+                <h3 className="text-lg font-semibold">Participants ({challenge.participant_count || 0})</h3>
                 <div className="flex gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    {activeParticipants} Active
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {completedParticipants} Completed
-                  </Badge>
+                  {hasJoined && (
+                    <Badge variant="default" className="text-xs">
+                      You're participating
+                    </Badge>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-3">
                 {mockParticipants.map((participant) => (
-                  <Card key={participant.id}>
+                  <Card key={participant.id} className={participant.id === user?.id ? "border-primary/50 bg-primary/5" : ""}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -255,6 +273,9 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                           <div>
                             <p className="font-medium">{participant.display_name}</p>
                             <p className="text-sm text-muted-foreground">@{participant.username}</p>
+                            {participant.id === user?.id && (
+                              <Badge variant="secondary" className="text-xs mt-1">You</Badge>
+                            )}
                           </div>
                         </div>
                         <div className="text-right">
@@ -289,6 +310,27 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
             </TabsContent>
 
             <TabsContent value="progress" className="space-y-4">
+              {hasJoined && participation && (
+                <Card className="border-primary/50 bg-primary/5">
+                  <CardHeader>
+                    <CardTitle className="text-base">Your Progress</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Current Progress</span>
+                        <span>{participation.progress}%</span>
+                      </div>
+                      <Progress value={participation.progress} />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Started: {new Date(participation.started_at!).toLocaleDateString()}</span>
+                        <span>Status: {participation.status}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
               <div>
                 <h3 className="text-lg font-semibold mb-3">Progress Overview</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

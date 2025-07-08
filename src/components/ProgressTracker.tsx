@@ -27,11 +27,11 @@ interface ProgressEntry {
 
 interface ProgressTrackerProps {
   challengeId: string;
+  participation?: any;
   challengeTitle: string;
   duration: number;
   currentProgress: number;
-  entries?: ProgressEntry[];
-  onUpdateProgress: (progress: number, note?: string) => void;
+  onUpdateProgress: (progress: number, note?: string) => Promise<boolean>;
 }
 
 // Mock progress entries - in real app, this would come from the database
@@ -45,24 +45,41 @@ const mockEntries: ProgressEntry[] = [
 
 export function ProgressTracker({ 
   challengeId, 
+  participation,
   challengeTitle, 
   duration, 
   currentProgress, 
-  entries = mockEntries,
   onUpdateProgress 
 }: ProgressTrackerProps) {
+  const [entries, setEntries] = useState<ProgressEntry[]>(mockEntries);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [note, setNote] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const completedDays = entries.filter(entry => entry.completed).length;
   const currentStreak = calculateCurrentStreak(entries);
   const progressPercentage = (completedDays / duration) * 100;
 
-  const handleCheckIn = () => {
+  const handleCheckIn = async () => {
+    setUpdating(true);
     const newProgress = Math.min(currentProgress + (100 / duration), 100);
-    onUpdateProgress(newProgress, note);
-    setNote("");
+    
+    const success = await onUpdateProgress(newProgress, note);
+    if (success) {
+      setNote("");
+      // Add new entry to local state
+      const newEntry: ProgressEntry = {
+        id: Date.now().toString(),
+        date: format(new Date(), 'yyyy-MM-dd'),
+        completed: true,
+        note: note || undefined,
+        progress_percentage: newProgress
+      };
+      setEntries(prev => [newEntry, ...prev]);
+    }
+    
+    setUpdating(false);
   };
 
   const todayEntry = entries.find(entry => 
@@ -141,7 +158,7 @@ export function ProgressTracker({
               />
               <Button onClick={handleCheckIn} className="w-full" size="lg">
                 <CheckCircle className="h-4 w-4" />
-                Check In for Today
+                {updating ? "Updating..." : "Check In for Today"}
               </Button>
             </>
           )}
@@ -189,6 +206,7 @@ export function ProgressTracker({
         <CardContent>
           <div className="space-y-3 max-h-60 overflow-y-auto">
             {entries
+              .filter(entry => entry.progress_percentage <= currentProgress)
               .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               .map((entry) => (
                 <div key={entry.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">

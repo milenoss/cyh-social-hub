@@ -96,7 +96,7 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
   const handleSaveProfile = async () => {
     setLoading(true);
     try {
-      await onUpdateProfile({
+      const result = await onUpdateProfile({
         display_name: formData.display_name,
         username: formData.username,
         bio: formData.bio,
@@ -104,10 +104,9 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
         is_public: formData.is_public
       });
       
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-      });
+      if (result) {
+        // Success toast is handled in the hook
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -120,11 +119,27 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
   };
 
   const handleAvatarUpload = () => {
-    // TODO: Implement avatar upload functionality
-    toast({
-      title: "Coming Soon",
-      description: "Avatar upload will be available in the next update.",
-    });
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        // For now, just show a placeholder URL
+        // In a real app, you'd upload to Supabase Storage
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setFormData(prev => ({ ...prev, avatar_url: e.target?.result as string }));
+        };
+        reader.readAsDataURL(file);
+        
+        toast({
+          title: "Avatar Updated",
+          description: "Avatar preview updated. Click Save to apply changes.",
+        });
+      }
+    };
+    input.click();
   };
 
   return (
