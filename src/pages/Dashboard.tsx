@@ -440,7 +440,6 @@ export default function Dashboard() {
           onUpdateChallenge={updateChallenge}
         />
       </div>
-        </div>
       </EmailVerificationGuard>
     </div>
   );
