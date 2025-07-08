@@ -40,9 +40,9 @@ export function Navigation() {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-6">
-            <a href="#challenges" className="text-muted-foreground hover:text-primary transition-colors">
-              Challenges
-            </a>
+            <Link to="/explore" className="text-muted-foreground hover:text-primary transition-colors">
+              Explore
+            </Link>
             <a href="#community" className="text-muted-foreground hover:text-primary transition-colors">
               Community
             </a>

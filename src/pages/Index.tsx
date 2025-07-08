@@ -1,11 +1,14 @@
 import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
 import { ChallengeGrid } from "@/components/ChallengeGrid";
+import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(true); // TODO: Check from user profile
 
   // Auto-redirect authenticated users to main page
   useEffect(() => {
@@ -13,6 +16,20 @@ const Index = () => {
       window.location.href = '/';
     }
   }, [user]);
+
+  const handleOnboardingComplete = (data: any) => {
+    // TODO: Save onboarding data to user profile
+    console.log('Onboarding completed:', data);
+    setHasCompletedOnboarding(true);
+    setShowOnboarding(false);
+  };
+
+  // Show onboarding for new users
+  useEffect(() => {
+    if (user && !hasCompletedOnboarding && !loading) {
+      setShowOnboarding(true);
+    }
+  }, [user, hasCompletedOnboarding, loading]);
 
   if (loading) {
     return (
@@ -23,6 +40,11 @@ const Index = () => {
         </div>
       </div>
     );
+  }
+
+  // Show onboarding flow for new users
+  if (showOnboarding) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
 
   return (
