@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Target, ArrowLeft } from "lucide-react";
+import { Target, ArrowLeft, Mail, Github, Lock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { Link } from "react-router-dom";
 
 export default function Auth() {
@@ -117,6 +121,11 @@ export default function Auth() {
               <TabsTrigger value="signup" onClick={() => setActiveTab("signup")}>Sign Up</TabsTrigger>
             </TabsList>
 
+            {/* Social Login Options */}
+            <div className="mt-6 mb-2">
+              <SocialLoginButtons redirectTo="/dashboard" />
+            </div>
+
             <TabsContent value="signin">
               <Card>
                 <CardHeader>
@@ -146,6 +155,11 @@ export default function Auth() {
                         placeholder="Enter your password"
                         required
                       />
+                      <div className="text-right mt-1">
+                        <Link to="/auth/reset-password" className="text-xs text-primary hover:underline">
+                          Forgot password?
+                        </Link>
+                      </div>
                     </div>
                     <Button 
                       type="submit" 

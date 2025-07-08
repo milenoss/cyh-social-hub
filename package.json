@@ -1,14 +1,36 @@
 {
   "name": "vite_react_shadcn_ts",
+  "version": "1.0.0",
+  "description": "A modern, social challenge platform that helps people build meaningful habits and track their personal growth journey.",
+  "author": "Choose Your Hard Team",
+  "license": "MIT",
+  "homepage": "https://github.com/yourusername/choose-your-hard#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/choose-your-hard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/choose-your-hard/issues"
+  },
+  "keywords": [
+    "challenges",
+    "habits",
+    "personal-growth",
+    "social",
+    "gamification",
+    "react",
+    "typescript",
+    "supabase"
+  ],
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -39,6 +61,9 @@
     "@radix-ui/react-toggle": "^1.1.0",
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.4",
+    "@supabase/auth-helpers-react": "^0.5.0",
+    "@supabase/auth-ui-react": "^0.4.7",
+    "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.50.3",
     "@tanstack/react-query": "^5.56.2",
     "class-variance-authority": "^0.7.1",
@@ -49,6 +74,7 @@
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",

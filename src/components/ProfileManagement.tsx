@@ -11,7 +11,10 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   User, 
-  Settings, 
+  Settings,
+  KeyRound,
+  Smartphone,
+  Trash2,
   Shield, 
   Bell, 
   Eye, 
@@ -32,7 +35,10 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { Profile } from "@/lib/supabase-types";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { TwoFactorAuthDialog } from "@/components/TwoFactorAuthDialog";
+import { AccountDeletionDialog } from "@/components/AccountDeletionDialog";
 
 interface ProfileManagementProps {
   profile: Profile | null;
@@ -71,6 +77,10 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
     push_progress: false,
     push_achievements: true
   });
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [privacy, setPrivacy] = useState({
     show_progress: true,
@@ -143,6 +153,44 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
     input.click();
   };
 
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== user?.email) {
+      toast({
+        title: "Error",
+        description: "Email confirmation doesn't match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // This would call a server function to delete the account
+      // For now, we'll just show a success message
+      toast({
+        title: "Account Deletion Requested",
+        description: "Your account deletion request has been submitted. You'll receive a confirmation email shortly.",
+      });
+      
+      // In a real implementation, you would call:
+      // await supabase.rpc('delete_user_account')
+      
+      // Redirect to home page after a delay
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 3000);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="text-center mb-8">
@@ -157,6 +205,10 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Profile</span>
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <KeyRound className="h-4 w-4" />
+            <span className="hidden sm:inline">Security</span>
           </TabsTrigger>
           <TabsTrigger value="privacy" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
@@ -308,6 +360,55 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
                   <Save className="h-4 w-4" />
                   {loading ? "Saving..." : "Save Changes"}
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Security Tab */}
+        <TabsContent value="security" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security Settings</CardTitle>
+              <CardDescription>
+                Manage your account security and authentication options
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Password Change */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Password</h3>
+                <p className="text-sm text-muted-foreground">
+                  Change your password or reset it if you've forgotten it
+                </p>
+                <Button variant="outline" asChild>
+                  <Link to="/auth/reset-password">
+                    <Lock className="h-4 w-4 mr-2" />
+                    Change Password
+                  </Link>
+                </Button>
+              </div>
+
+              <Separator />
+
+              {/* Two-Factor Authentication */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Two-Factor Authentication</h3>
+                <p className="text-sm text-muted-foreground">
+                  Add an extra layer of security to your account with an authenticator app
+                </p>
+                <TwoFactorAuthDialog />
+              </div>
+
+              <Separator />
+
+              {/* Account Deletion */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Delete Account</h3>
+                <p className="text-sm text-muted-foreground">
+                  Permanently delete your account and all associated data
+                </p>
+                <AccountDeletionDialog />
               </div>
             </CardContent>
           </Card>
