@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChallengeGrid } from "@/components/ChallengeGrid";
@@ -16,7 +18,16 @@ import {
 } from "lucide-react";
 
 export default function Explore() {
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("challenges");
+
+  // Handle tab switching from URL params
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['challenges', 'search', 'activity', 'leaderboards'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-background">

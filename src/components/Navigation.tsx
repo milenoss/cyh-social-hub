@@ -48,12 +48,12 @@ export function Navigation() {
             <Link to="/explore" className="text-muted-foreground hover:text-primary transition-colors">
               Explore
             </Link>
-            <a href="#community" className="text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/explore?tab=activity" className="text-muted-foreground hover:text-primary transition-colors">
               Community
-            </a>
-            <a href="#progress" className="text-muted-foreground hover:text-primary transition-colors">
-              Progress
-            </a>
+            </Link>
+            <Link to="/explore?tab=leaderboards" className="text-muted-foreground hover:text-primary transition-colors">
+              Leaderboards
+            </Link>
           </div>
 
           {/* User Actions */}
@@ -62,11 +62,15 @@ export function Navigation() {
               <>
                 <Button variant="ghost" size="sm" className="hidden sm:flex">
                   <Users className="h-4 w-4" />
-                  Find Friends
+                  <Link to="/explore?tab=activity" className="flex items-center gap-2">
+                    Find Friends
+                  </Link>
                 </Button>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/dashboard?tab=active">
                   <Trophy className="h-4 w-4" />
-                  My Challenges
+                    My Challenges
+                  </Link>
                 </Button>
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/dashboard">
@@ -145,23 +149,23 @@ export function Navigation() {
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem asChild>
-                        <Link to="/dashboard" onClick={() => window.location.href = '/dashboard?tab=profile'} className="flex items-center gap-2 w-full">
+                        <Link to="/dashboard?tab=profile" className="flex items-center gap-2 w-full">
                           <User className="h-4 w-4" />
                           Profile Settings
                         </Link>
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem asChild>
-                        <Link to="/dashboard" onClick={() => window.location.href = '/dashboard?tab=created'} className="flex items-center gap-2 w-full">
+                        <Link to="/dashboard?tab=created" className="flex items-center gap-2 w-full">
                           <Trophy className="h-4 w-4" />
                           My Challenges
                         </Link>
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem asChild>
-                        <Link to="/dashboard" onClick={() => window.location.href = '/dashboard?tab=completed'} className="flex items-center gap-2 w-full">
+                        <Link to="/dashboard?tab=completed" className="flex items-center gap-2 w-full">
                           <Trophy className="h-4 w-4" />
-                          Achievements
+                          Completed
                         </Link>
                       </DropdownMenuItem>
                       
@@ -177,7 +181,7 @@ export function Navigation() {
                 
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" />
-                  <span className="hidden sm:inline ml-2">Sign Out</span>
+                  <span className="hidden sm:inline ml-1">Sign Out</span>
                 </Button>
               </>
             ) : (
