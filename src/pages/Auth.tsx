@@ -66,9 +66,17 @@ export default function Auth() {
       });
     } else {
       toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account.",
+        title: "Account created successfully!",
+        description: "Please check your email and click the verification link to activate your account.",
       });
+      
+      // Show additional instructions
+      setTimeout(() => {
+        toast({
+          title: "Check your email",
+          description: "We've sent a verification link to your email address. Please click it to complete your registration.",
+        });
+      }, 2000);
     }
 
     setLoading(false);

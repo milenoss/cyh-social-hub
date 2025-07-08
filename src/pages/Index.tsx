@@ -3,6 +3,7 @@ import { Hero } from "@/components/Hero";
 import { ChallengeGrid } from "@/components/ChallengeGrid";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { useAuth } from "@/contexts/AuthContext";
+import { EmailVerificationGuard } from "@/components/EmailVerificationGuard";
 import { useEffect, useState } from "react";
 
 const Index = () => {
@@ -52,12 +53,14 @@ const Index = () => {
       <Navigation />
       
       {/* Main Content */}
-      <main className="pt-16">
+      <EmailVerificationGuard showWarning={user ? true : false}>
+        <main className="pt-16">
         <Hero />
         <div id="challenges">
           <ChallengeGrid />
         </div>
-      </main>
+        </main>
+      </EmailVerificationGuard>
       
       {/* Footer */}
       <footer className="bg-muted/50 py-12">

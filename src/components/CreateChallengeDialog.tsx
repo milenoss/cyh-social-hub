@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from "@/components/ui/badge";
 import { Plus, X } from "lucide-react";
 import { DifficultyLevel } from "@/lib/supabase-types";
+import { EmailVerificationGuard } from "@/components/EmailVerificationGuard";
 
 interface CreateChallengeDialogProps {
   onCreateChallenge: (challengeData: any) => Promise<any>;
@@ -93,12 +94,14 @@ export function CreateChallengeDialog({ onCreateChallenge, trigger }: CreateChal
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="hero" size="lg">
-            <Plus className="h-5 w-5" />
-            Create Challenge
-          </Button>
-        )}
+        <EmailVerificationGuard requireVerification={true}>
+          {trigger || (
+            <Button variant="hero" size="lg">
+              <Plus className="h-5 w-5" />
+              Create Challenge
+            </Button>
+          )}
+        </EmailVerificationGuard>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>

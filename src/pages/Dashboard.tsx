@@ -34,6 +34,7 @@ import { useChallenges } from "@/hooks/useChallenges";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { EmailVerificationGuard } from "@/components/EmailVerificationGuard";
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -116,7 +117,8 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-8 pt-24">
+      <EmailVerificationGuard showWarning={true}>
+        <div className="container mx-auto px-4 py-8 pt-24">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-6">
@@ -438,6 +440,8 @@ export default function Dashboard() {
           onUpdateChallenge={updateChallenge}
         />
       </div>
+        </div>
+      </EmailVerificationGuard>
     </div>
   );
 }

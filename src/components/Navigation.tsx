@@ -3,6 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Target, User, Trophy, Users, LogOut } from "lucide-react";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
@@ -100,14 +101,21 @@ export function Navigation() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={profile?.avatar_url || ""} />
-                          <AvatarFallback className="text-lg">
+                          <AvatarFallback className={`text-lg ${!user?.email_confirmed_at ? 'bg-amber-100 text-amber-700' : ''}`}>
                             {profile?.display_name?.[0] || profile?.username?.[0] || user.email?.[0]?.toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <p className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">
                             {profile?.display_name || profile?.username || 'User'}
-                          </p>
+                            </p>
+                            {!user?.email_confirmed_at && (
+                              <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                                Unverified
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">{user.email}</p>
                           {profile?.bio && (
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
