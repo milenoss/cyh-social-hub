@@ -20,7 +20,7 @@ export function useChallengeParticipation(challengeId?: string) {
         .select('*')
         .eq('challenge_id', challengeId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         throw error;
