@@ -123,13 +123,17 @@ export type Database = {
           created_at: string
           current_streak: number | null
           display_name: string | null
+          email_verified: boolean | null
           id: string
           is_public: boolean | null
+          location: string | null
           longest_streak: number | null
+          social_links: Json | null
           total_points: number | null
           updated_at: string
           user_id: string
           username: string | null
+          website: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -138,13 +142,17 @@ export type Database = {
           created_at?: string
           current_streak?: number | null
           display_name?: string | null
+          email_verified?: boolean | null
           id?: string
           is_public?: boolean | null
+          location?: string | null
           longest_streak?: number | null
+          social_links?: Json | null
           total_points?: number | null
           updated_at?: string
           user_id: string
           username?: string | null
+          website?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -153,13 +161,17 @@ export type Database = {
           created_at?: string
           current_streak?: number | null
           display_name?: string | null
+          email_verified?: boolean | null
           id?: string
           is_public?: boolean | null
+          location?: string | null
           longest_streak?: number | null
+          social_links?: Json | null
           total_points?: number | null
           updated_at?: string
           user_id?: string
           username?: string | null
+          website?: string | null
         }
         Relationships: []
       }

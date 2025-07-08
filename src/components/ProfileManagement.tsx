@@ -70,9 +70,9 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
     bio: profile?.bio || "",
     avatar_url: profile?.avatar_url || "",
     is_public: profile?.is_public ?? true,
-    location: "",
-    website: "",
-    social_links: {} as SocialLinks
+    location: profile?.location || "",
+    website: profile?.website || "",
+    social_links: (profile?.social_links as SocialLinks) || {}
   });
 
   const [notifications, setNotifications] = useState({
@@ -103,9 +103,9 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
         bio: profile.bio || "",
         avatar_url: profile.avatar_url || "",
         is_public: profile.is_public ?? true,
-        location: "",
-        website: "",
-        social_links: {}
+        location: profile.location || "",
+        website: profile.website || "",
+        social_links: (profile.social_links as SocialLinks) || {}
       });
     }
   }, [profile]);
@@ -118,7 +118,10 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
         username: formData.username,
         bio: formData.bio,
         avatar_url: formData.avatar_url,
-        is_public: formData.is_public
+        is_public: formData.is_public,
+        location: formData.location,
+        website: formData.website,
+        social_links: formData.social_links
       });
       
       if (result) {
@@ -315,6 +318,18 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      <Label htmlFor="location">Location</Label>
+                    </div>
+                    <Input
+                      id="location"
+                      value={formData.location}
+                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                      placeholder="City, Country"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
                       <Twitter className="h-4 w-4" />
                       <Label htmlFor="twitter">Twitter</Label>
                     </div>
@@ -389,7 +404,7 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
                 </p>
                 <Button variant="outline" asChild>
                   <Link to="/auth/reset-password">
-                    <Lock className="h-4 w-4 mr-2" />
+                    <KeyRound className="h-4 w-4 mr-2" />
                     Change Password
                   </Link>
                 </Button>
