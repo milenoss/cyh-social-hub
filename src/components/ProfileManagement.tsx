@@ -15,6 +15,9 @@ import {
   KeyRound,
   Smartphone,
   Trash2,
+  KeyRound,
+  Smartphone,
+  Trash2,
   Shield, 
   Bell, 
   Eye, 
@@ -33,6 +36,8 @@ import {
   Instagram
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SocialConnectionsManager } from "@/components/SocialConnectionsManager";
+import { SecurityAuditLog } from "@/components/SecurityAuditLog";
 import { useAuth } from "@/contexts/AuthContext";
 import { Profile } from "@/lib/supabase-types";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -395,12 +400,32 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
               <div className="space-y-2">
                 <h3 className="text-lg font-medium">Two-Factor Authentication</h3>
                 <p className="text-sm text-muted-foreground">
-                  Add an extra layer of security to your account with an authenticator app
+                  Add an extra layer of security to your account with an authenticator app like Google Authenticator or Authy
                 </p>
                 <TwoFactorAuthDialog />
               </div>
 
               <Separator />
+
+              {/* Social Connections */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Social Connections</h3>
+                <p className="text-sm text-muted-foreground">
+                  Connect your social accounts for easier sign-in
+                </p>
+                <SocialConnectionsManager />
+              </div>
+
+              <Separator />
+              
+              {/* Security Audit Log */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Security Audit Log</h3>
+                <p className="text-sm text-muted-foreground">
+                  Review recent security activity on your account
+                </p>
+                <SecurityAuditLog />
+              </div>
 
               {/* Account Deletion */}
               <div className="space-y-2">

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import QRCode from 'qrcode';
 
 export function useTwoFactorAuth() {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -46,20 +47,27 @@ export function useTwoFactorAuth() {
       // In a real implementation, this would call a server function to generate a secret
       // For demo purposes, we'll simulate the response
       
-      // This would be the response from your server
-      const mockResponse = {
-        secret: "JBSWY3DPEHPK3PXP", // Example secret
-        qrCodeUrl: "otpauth://totp/ChooseYourHard:user?secret=JBSWY3DPEHPK3PXP&issuer=ChooseYourHard",
-        recoveryCodes: [
-          "1234-5678-9012",
-          "2345-6789-0123",
-          "3456-7890-1234",
-          "4567-8901-2345",
-          "5678-9012-3456"
-        ]
-      };
+      // Generate a secret key (in production, use the Edge Function)
+      const mockSecret = "JBSWY3DPEHPK3PXP"; // Example secret
+      
+      // Generate QR code
+      const otpAuthUrl = `otpauth://totp/ChooseYourHard:${user.email}?secret=${mockSecret}&issuer=ChooseYourHard`;
+      const qrCodeUrl = await QRCode.toDataURL(otpAuthUrl);
+      
+      // Generate recovery codes
+      const recoveryCodes = [
+        "1234-5678-9012",
+        "2345-6789-0123",
+        "3456-7890-1234",
+        "4567-8901-2345",
+        "5678-9012-3456"
+      ];
 
-      return mockResponse;
+      return {
+        secret: mockSecret,
+        qrCodeUrl,
+        recoveryCodes
+      };
     } catch (error: any) {
       console.error('Error setting up 2FA:', error);
       toast({
@@ -78,7 +86,16 @@ export function useTwoFactorAuth() {
 
     try {
       // In a real implementation, this would verify the code and enable 2FA
-      // For demo purposes, we'll simulate success
+      // For demo purposes, we'll simulate success if the code is 6 digits
+      
+      if (!/^\d{6}$/.test(verificationCode)) {
+        toast({
+          title: "Invalid Code",
+          description: "Please enter a valid 6-digit verification code",
+          variant: "destructive",
+        });
+        return false;
+      }
       
       // Generate mock recovery codes
       const recoveryCodes = [

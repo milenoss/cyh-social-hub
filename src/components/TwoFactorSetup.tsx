@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Smartphone, Copy, Check, AlertTriangle, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import QRCode from "qrcode";
+import { useTwoFactorAuth } from "@/hooks/useTwoFactorAuth";
 
 interface TwoFactorSetupProps {
   userId: string;
@@ -17,6 +17,7 @@ interface TwoFactorSetupProps {
 
 export function TwoFactorSetup({ userId, onComplete, onCancel }: TwoFactorSetupProps) {
   const { toast } = useToast();
+  const { setupTwoFactor, enableTwoFactor } = useTwoFactorAuth();
   const [activeTab, setActiveTab] = useState("setup");
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [secretKey, setSecretKey] = useState<string | null>(null);
@@ -24,31 +25,21 @@ export function TwoFactorSetup({ userId, onComplete, onCancel }: TwoFactorSetupP
   const [isVerifying, setIsVerifying] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
 
   useEffect(() => {
-    // In a real implementation, this would call your backend to generate a secret
     const generateSecret = async () => {
       try {
         setIsLoading(true);
         
-        // Simulate API call to generate secret
-        // In production, this would be a call to your Supabase Edge Function
-        setTimeout(() => {
-          // Example secret - in production this would come from the server
-          const mockSecret = "JBSWY3DPEHPK3PXP";
-          setSecretKey(mockSecret);
-          
-          // Generate QR code
-          const otpAuthUrl = `otpauth://totp/ChooseYourHard:user?secret=${mockSecret}&issuer=ChooseYourHard`;
-          QRCode.toDataURL(otpAuthUrl, (err, url) => {
-            if (err) {
-              console.error("Error generating QR code:", err);
-              return;
-            }
-            setQrCodeUrl(url);
-            setIsLoading(false);
-          });
-        }, 1500);
+        // Get 2FA setup data
+        const response = await setupTwoFactor();
+        
+        if (response) {
+          setSecretKey(response.secret);
+          setQrCodeUrl(response.qrCodeUrl);
+          setRecoveryCodes(response.recoveryCodes || []);
+        }
       } catch (error) {
         console.error("Error generating 2FA secret:", error);
         toast({
@@ -56,12 +47,13 @@ export function TwoFactorSetup({ userId, onComplete, onCancel }: TwoFactorSetupP
           description: "Failed to generate 2FA secret. Please try again.",
           variant: "destructive",
         });
+      } finally {
         setIsLoading(false);
       }
     };
 
     generateSecret();
-  }, [toast]);
+  }, [toast, userId, setupTwoFactor]);
 
   const handleCopySecret = () => {
     if (secretKey) {
@@ -79,7 +71,7 @@ export function TwoFactorSetup({ userId, onComplete, onCancel }: TwoFactorSetupP
   };
 
   const handleVerifyCode = async () => {
-    if (!verificationCode || verificationCode.length !== 6) {
+    if (!verificationCode || verificationCode.length !== 6 || !secretKey) {
       toast({
         title: "Invalid code",
         description: "Please enter a valid 6-digit verification code.",
@@ -90,25 +82,15 @@ export function TwoFactorSetup({ userId, onComplete, onCancel }: TwoFactorSetupP
 
     setIsVerifying(true);
     try {
-      // Simulate verification API call
-      // In production, this would verify the code against the secret
-      setTimeout(() => {
-        // For demo purposes, any 6-digit code is accepted
-        if (verificationCode.length === 6 && /^\d+$/.test(verificationCode)) {
-          toast({
-            title: "2FA Enabled",
-            description: "Two-factor authentication has been successfully enabled for your account.",
-          });
-          onComplete();
-        } else {
-          toast({
-            title: "Invalid code",
-            description: "The verification code is incorrect. Please try again.",
-            variant: "destructive",
-          });
-        }
-        setIsVerifying(false);
-      }, 1500);
+      const success = await enableTwoFactor(secretKey, verificationCode);
+      
+      if (success) {
+        toast({
+          title: "2FA Enabled",
+          description: "Two-factor authentication has been successfully enabled for your account.",
+        });
+        onComplete();
+      }
     } catch (error) {
       console.error("Error verifying 2FA code:", error);
       toast({
@@ -116,6 +98,7 @@ export function TwoFactorSetup({ userId, onComplete, onCancel }: TwoFactorSetupP
         description: "Failed to verify code. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsVerifying(false);
     }
   };

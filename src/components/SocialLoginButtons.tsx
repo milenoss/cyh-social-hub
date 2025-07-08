@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Github } from "lucide-react";
+import { Github, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface SocialLoginButtonsProps {
   redirectTo?: string;
@@ -9,18 +10,31 @@ interface SocialLoginButtonsProps {
 
 export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
   const [isLoading, setIsLoading] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleSocialLogin = async (provider: 'google' | 'github' | 'apple') => {
     setIsLoading(provider);
     try {
-      await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: redirectTo || `${window.location.origin}/dashboard`
+          redirectTo: redirectTo || `${window.location.origin}/dashboard`,
+          queryParams: {
+            prompt: 'consent'
+          }
         }
       });
-    } catch (error) {
+      
+      if (error) throw error;
+      
+      // The user will be redirected to the OAuth provider
+    } catch (error: any) {
       console.error(`Error signing in with ${provider}:`, error);
+      toast({
+        title: "Login Error",
+        description: error.message || `Failed to sign in with ${provider}`,
+        variant: "destructive",
+      });
       setIsLoading(null);
     }
   };

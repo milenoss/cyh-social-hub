@@ -45,8 +45,63 @@ export function useAccountDeletion() {
     }
   };
 
+  const cancelDeletionRequest = async (requestId: string, reason?: string) => {
+    if (!user) return false;
+
+    try {
+      // Call the RPC function to cancel account deletion
+      const { data, error } = await supabase.rpc('cancel_account_deletion', {
+        request_id: requestId,
+        reason
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Deletion Request Cancelled",
+        description: "Your account deletion request has been cancelled.",
+      });
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error cancelling deletion request:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel deletion request",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const getDeletionRequests = async () => {
+    if (!user) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('account_deletion_requests')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('requested_at', { ascending: false });
+
+      if (error) throw error;
+
+      return data || [];
+    } catch (error: any) {
+      console.error('Error fetching deletion requests:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch deletion requests",
+        variant: "destructive",
+      });
+      return [];
+    }
+  };
+
   return {
     isDeleting,
-    requestAccountDeletion
+    requestAccountDeletion,
+    cancelDeletionRequest,
+    getDeletionRequests
   };
 }
