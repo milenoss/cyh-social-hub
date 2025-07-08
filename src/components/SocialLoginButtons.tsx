@@ -18,7 +18,7 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
     setIsLoading(provider);
     setError(null);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: redirectTo || `${window.location.origin}/dashboard`,
@@ -31,6 +31,7 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
       if (error) throw error;
       
       // The user will be redirected to the OAuth provider if successful
+      console.log("OAuth sign-in initiated", data);
     } catch (error: any) {
       console.error(`Error signing in with ${provider}:`, error);
       setError(`Failed to sign in with ${provider}. ${error.message}`);
@@ -39,7 +40,12 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
         description: error.message || `Failed to sign in with ${provider}`,
         variant: "destructive",
       });
-      setIsLoading(null);
+    } finally {
+      // We don't set isLoading to null here because the page will redirect on success
+      // Only set it to null if there's an error
+      if (error) {
+        setIsLoading(null);
+      }
     }
   };
 

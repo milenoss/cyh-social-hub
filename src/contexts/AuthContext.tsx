@@ -11,7 +11,7 @@ interface AuthContextType {
   signOut: () => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   updatePassword: (password: string) => Promise<{ error: any }>;
-  refreshSession: () => Promise<void>;
+  refreshSession: () => Promise<{ data: any, error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -80,14 +80,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
-  const refreshSession = async () => {
+  const refreshSession = async (): Promise<{ data: any, error: any }> => {
     try {
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
         console.error('Error refreshing session:', error);
+        return { data: null, error };
       }
+      return { data, error: null };
     } catch (error) {
       console.error('Error refreshing session:', error);
+      return { data: null, error };
     }
   };
 
