@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
