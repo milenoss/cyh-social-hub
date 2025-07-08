@@ -18,11 +18,20 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        hero: "bg-gradient-motivation text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 font-semibold",
+        challenge: "bg-card border-2 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary",
+        difficulty: {
+          easy: "bg-difficulty-easy text-white hover:bg-difficulty-easy/80",
+          medium: "bg-difficulty-medium text-white hover:bg-difficulty-medium/80", 
+          hard: "bg-difficulty-hard text-white hover:bg-difficulty-hard/80",
+          extreme: "bg-difficulty-extreme text-white hover:bg-difficulty-extreme/80"
+        }
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
+        xl: "h-14 rounded-lg px-10 text-lg",
         icon: "h-10 w-10",
       },
     },
