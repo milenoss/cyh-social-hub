@@ -59,6 +59,16 @@ export default {
 					hard: 'hsl(var(--hard))',
 					extreme: 'hsl(var(--extreme))'
 				},
+				premium: {
+					gold: 'hsl(var(--premium-gold))',
+					silver: 'hsl(var(--premium-silver))',
+					bronze: 'hsl(var(--premium-bronze))'
+				},
+				status: {
+					success: 'hsl(var(--success))',
+					warning: 'hsl(var(--warning))',
+					info: 'hsl(var(--info))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -160,7 +170,10 @@ export default {
 			},
 			backgroundImage: {
 				'gradient-motivation': 'var(--gradient-motivation)',
-				'gradient-success': 'var(--gradient-success)'
+				'gradient-success': 'var(--gradient-success)',
+				'gradient-premium': 'var(--gradient-premium)',
+				'gradient-success-alt': 'var(--gradient-success-alt)',
+				'gradient-warning': 'var(--gradient-warning)'
 			},
 			screens: {
 				'xs': '475px',
