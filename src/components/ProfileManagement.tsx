@@ -58,6 +58,25 @@ interface SocialLinks {
   instagram?: string;
 }
 
+// Helper function to ensure social_links is always properly initialized
+const getInitialSocialLinks = (socialLinks: any): SocialLinks => {
+  if (!socialLinks || typeof socialLinks !== 'object') {
+    return {
+      website: "",
+      twitter: "",
+      github: "",
+      instagram: ""
+    };
+  }
+  
+  return {
+    website: socialLinks.website || "",
+    twitter: socialLinks.twitter || "",
+    github: socialLinks.github || "",
+    instagram: socialLinks.instagram || ""
+  };
+};
+
 export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagementProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -72,7 +91,7 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
     is_public: profile?.is_public ?? true,
     location: profile?.location || "",
     website: profile?.website || "",
-    social_links: (profile?.social_links && typeof profile.social_links === 'object' ? profile.social_links as SocialLinks : {})
+    social_links: getInitialSocialLinks(profile?.social_links)
   });
 
   const [notifications, setNotifications] = useState({
@@ -105,7 +124,7 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
         is_public: profile.is_public ?? true,
         location: profile.location || "",
         website: profile.website || "",
-        social_links: (profile.social_links && typeof profile.social_links === 'object' ? profile.social_links as SocialLinks : {})
+        social_links: getInitialSocialLinks(profile.social_links)
       });
     }
   }, [profile]);
