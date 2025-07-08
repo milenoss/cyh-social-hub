@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 import { Users, Clock, Target, Edit, Trash2, MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChallengeWithCreator } from "@/lib/supabase-types";
@@ -37,7 +38,9 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
   const handleJoin = () => {
     if (hasJoined) {
       // Already joined, maybe show progress or details
-      return;
+      // Navigate to dashboard to see progress
+      window.location.href = '/dashboard?tab=active';
+      return; 
     }
     joinChallenge();
   };
@@ -139,7 +142,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
         {!isOwner && !hasJoined && (
           <Button 
             className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
-            variant="challenge"
+            variant="challenge" 
             onClick={(e) => { 
               handleCardClick(e); 
               handleJoin(); 
@@ -153,7 +156,11 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
         {!isOwner && hasJoined && (
           <div className="w-full text-center">
             <div className="text-sm text-green-600 font-medium mb-1">
-              ✓ Joined
+              <Button 
+                variant="link" 
+                onClick={() => window.location.href = '/dashboard?tab=active'}>
+                ✓ View Progress
+              </Button>
             </div>
             <div className="text-xs text-muted-foreground">
               Progress: {participation?.progress || 0}%
@@ -162,7 +169,12 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
         )}
         {isOwner && (
           <div className="w-full text-center text-sm text-muted-foreground">
-            Your Challenge
+            <Button 
+              variant="link" 
+              className="text-muted-foreground hover:text-primary"
+              onClick={() => window.location.href = '/dashboard?tab=created'}>
+              Manage Challenge
+            </Button>
           </div>
         )}
       </CardFooter>

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -69,13 +70,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
   const handleJoin = () => {
     if (!user) {
       // Redirect to auth page
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to join challenges",
-      });
-      setTimeout(() => {
-        window.location.href = '/auth';
-      }, 1500);
+      window.location.href = '/auth';
       return;
     }
     
@@ -173,12 +168,12 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  onClick={handleJoin}
+                  onClick={() => window.location.href = '/dashboard?tab=active'}
                   disabled={participationLoading}
                   className="min-w-[200px]"
                 >
                   <Pause className="h-5 w-5" />
-                  {participationLoading ? "Loading..." : "Leave Challenge"}
+                  {participationLoading ? "Loading..." : "View Progress"}
                 </Button>
               ) : (
                 <Button 
