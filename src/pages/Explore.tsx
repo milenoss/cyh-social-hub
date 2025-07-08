@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChallengeGrid } from "@/components/ChallengeGrid";
 import { ChallengeFeed } from "@/components/ChallengeFeed";
+import { FriendSystem } from "@/components/FriendSystem";
 import { FriendSystem } from "@/components/FriendSystem";
 import { Leaderboards } from "@/components/Leaderboards";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
@@ -20,7 +23,16 @@ import {
 
 export default function Explore() {
   const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("challenges");
+
+  // Handle tab switching from URL params
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['challenges', 'search', 'activity', 'leaderboards', 'friends'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   // Handle tab switching from URL params
   useEffect(() => {
@@ -64,6 +76,10 @@ export default function Explore() {
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Friends</span>
             </TabsTrigger>
+            <TabsTrigger value="friends" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Friends</span>
+            </TabsTrigger>
             <TabsTrigger value="leaderboards" className="flex items-center gap-2">
               <Trophy className="h-4 w-4" />
               <span className="hidden sm:inline">Leaderboards</span>
@@ -80,6 +96,10 @@ export default function Explore() {
 
           <TabsContent value="activity">
             <ChallengeFeed />
+          </TabsContent>
+          
+          <TabsContent value="friends">
+            <FriendSystem />
           </TabsContent>
           
           <TabsContent value="friends">
