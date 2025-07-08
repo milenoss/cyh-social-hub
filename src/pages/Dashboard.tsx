@@ -36,8 +36,25 @@ import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EmailVerificationGuard } from "@/components/EmailVerificationGuard";
 
+// Check for social login redirect
+const checkForSocialLoginRedirect = () => {
+  const hash = window.location.hash;
+  if (hash && (hash.includes('access_token') || hash.includes('error'))) {
+    // This is likely a social login redirect
+    console.log('Detected social login redirect');
+    
+    // Clear the hash to avoid issues with future navigation
+    setTimeout(() => {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }, 1000);
+    
+    return true;
+  }
+  return false;
+};
+
 export default function Dashboard() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, refreshSession } = useAuth();
   const [searchParams] = useSearchParams();
   const { 
     profile, 
@@ -54,6 +71,7 @@ export default function Dashboard() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedChallengeForProgress, setSelectedChallengeForProgress] = useState<any>(null);
   const { updateProgress } = useChallengeParticipation(selectedChallengeForProgress?.challenge_id);
+  const [isSocialLoginRedirect, setIsSocialLoginRedirect] = useState(false);
 
   // Handle tab switching from URL params
   const [activeTab, setActiveTab] = useState("active");
@@ -63,7 +81,17 @@ export default function Dashboard() {
     if (tab && ['active', 'created', 'completed', 'profile'].includes(tab)) {
       setActiveTab(tab);
     }
+    
+    // Check if this is a social login redirect
+    const isRedirect = checkForSocialLoginRedirect();
+    setIsSocialLoginRedirect(isRedirect);
+    
+    // If it's a social login redirect, refresh the session
+    if (isRedirect) {
+      refreshSession();
+    }
   }, [searchParams]);
+  
   const handleEditChallenge = (challenge: ChallengeWithCreator) => {
     setEditingChallenge(challenge);
     setEditModalOpen(true);
@@ -81,7 +109,7 @@ export default function Dashboard() {
     return updateProgress(progress, note);
   };
 
-  if (authLoading || loading) {
+  if (authLoading || loading || isSocialLoginRedirect) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />

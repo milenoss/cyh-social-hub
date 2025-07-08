@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -10,16 +10,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Target, ArrowLeft, Mail, Github, Lock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { Link } from "react-router-dom";
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Auto-redirect authenticated users to main page
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,8 +47,9 @@ export default function Auth() {
       toast({
         title: "Welcome back!",
         description: "Successfully signed in.",
+        variant: "default",
       });
-      navigate("/");
+      navigate("/dashboard");
     }
 
     setLoading(false);
@@ -121,11 +128,6 @@ export default function Auth() {
               <TabsTrigger value="signup" onClick={() => setActiveTab("signup")}>Sign Up</TabsTrigger>
             </TabsList>
 
-            {/* Social Login Options */}
-            <div className="mt-6 mb-2">
-              <SocialLoginButtons redirectTo="/dashboard" />
-            </div>
-
             <TabsContent value="signin">
               <Card>
                 <CardHeader>
@@ -171,6 +173,11 @@ export default function Auth() {
                       {loading ? "Signing in..." : "Sign In"}
                     </Button>
                   </form>
+                  
+                  {/* Social Login Options */}
+                  <div className="mt-6">
+                    <SocialLoginButtons redirectTo="/dashboard" />
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -236,6 +243,11 @@ export default function Auth() {
                       {loading ? "Creating account..." : "Create Account"}
                     </Button>
                   </form>
+                  
+                  {/* Social Login Options */}
+                  <div className="mt-6">
+                    <SocialLoginButtons redirectTo="/dashboard" />
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
