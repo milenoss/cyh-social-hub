@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Github, Mail } from "lucide-react";
+import { Github, Mail, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SocialLoginButtonsProps {
   redirectTo?: string;
@@ -10,10 +11,12 @@ interface SocialLoginButtonsProps {
 
 export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
   const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSocialLogin = async (provider: 'google' | 'github' | 'apple') => {
     setIsLoading(provider);
+    setError(null);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -27,9 +30,10 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
       
       if (error) throw error;
       
-      // The user will be redirected to the OAuth provider
+      // The user will be redirected to the OAuth provider if successful
     } catch (error: any) {
       console.error(`Error signing in with ${provider}:`, error);
+      setError(`Failed to sign in with ${provider}. ${error.message}`);
       toast({
         title: "Login Error",
         description: error.message || `Failed to sign in with ${provider}`,
@@ -51,6 +55,13 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
           </span>
         </div>
       </div>
+      
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       
       <div className="grid grid-cols-2 gap-3">
         <Button 
