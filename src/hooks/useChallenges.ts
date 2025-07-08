@@ -146,11 +146,14 @@ export function useChallenges() {
   const joinChallenge = async (challengeId: string) => {
     if (!user) {
       toast({
-        title: "Error",
-        description: "You must be logged in to join a challenge",
-        variant: "destructive",
+        title: "Sign in required",
+        description: "Please sign in to join challenges",
+        variant: "default",
       });
-      return false;
+      
+      // Redirect to auth page
+      window.location.href = '/auth';
+      return null;
     }
 
     try {

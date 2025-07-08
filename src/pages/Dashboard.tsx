@@ -85,10 +85,24 @@ export default function Dashboard() {
     // Check if this is a social login redirect
     const isRedirect = checkForSocialLoginRedirect();
     setIsSocialLoginRedirect(isRedirect);
-    
+  
     // If it's a social login redirect, refresh the session
     if (isRedirect) {
-      refreshSession();
+      refreshSession().then(({ data, error }) => {
+        if (error) {
+          console.error('Error refreshing session after social login:', error);
+          toast({
+            title: "Error",
+            description: "There was a problem with your social login. Please try again.",
+            variant: "destructive",
+          });
+        } else if (data) {
+          toast({
+            title: "Success",
+            description: "Successfully signed in with social provider.",
+          });
+        }
+      });
     }
   }, [searchParams]);
   

@@ -69,7 +69,13 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
   const handleJoin = () => {
     if (!user) {
       // Redirect to auth page
-      window.location.href = '/auth';
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to join challenges",
+      });
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 1500);
       return;
     }
     
