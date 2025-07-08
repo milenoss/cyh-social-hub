@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChallengeCard } from "./ChallengeCard";
+import { ChallengeDetailsModal } from "./ChallengeDetailsModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Filter, Search, Plus } from "lucide-react";
@@ -15,6 +16,8 @@ const difficulties: (string | DifficultyLevel)[] = ["All", "easy", "medium", "ha
 export function ChallengeGrid() {
   const { user } = useAuth();
   const { challenges, loading, createChallenge, updateChallenge, deleteChallenge, joinChallenge } = useChallenges();
+  const [selectedChallenge, setSelectedChallenge] = useState<ChallengeWithCreator | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
@@ -46,6 +49,11 @@ export function ChallengeGrid() {
 
   const handleDeleteChallenge = (challengeId: string) => {
     deleteChallenge(challengeId);
+  };
+
+  const handleChallengeClick = (challenge: ChallengeWithCreator) => {
+    setSelectedChallenge(challenge);
+    setDetailsModalOpen(true);
   };
 
   if (loading) {
@@ -86,6 +94,14 @@ export function ChallengeGrid() {
             </div>
           )}
         </div>
+
+        {/* Challenge Details Modal */}
+        <ChallengeDetailsModal
+          challenge={selectedChallenge}
+          open={detailsModalOpen}
+          onOpenChange={setDetailsModalOpen}
+          onJoin={handleJoinChallenge}
+        />
 
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
@@ -147,7 +163,7 @@ export function ChallengeGrid() {
         {/* Challenge Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredChallenges.map((challenge) => (
-            <div key={challenge.id} className="animate-scale-in">
+            <div key={challenge.id} className="animate-scale-in cursor-pointer" onClick={() => handleChallengeClick(challenge)}>
               <ChallengeCard 
                 challenge={challenge} 
                 onJoin={handleJoinChallenge}

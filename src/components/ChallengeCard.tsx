@@ -45,8 +45,13 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent card click when clicking on action buttons
+    e.stopPropagation();
+  };
+
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group">
+    <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group cursor-pointer">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between mb-2">
           <Badge variant="secondary" className="text-xs">
@@ -60,17 +65,17 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
             </Badge>
             {isOwner && (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger asChild onClick={handleCardClick}>
                   <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleEdit}>
+                  <DropdownMenuItem onClick={(e) => { handleCardClick(e); handleEdit(); }}>
                     <Edit className="h-4 w-4 mr-2" />
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                  <DropdownMenuItem onClick={(e) => { handleCardClick(e); handleDelete(); }} className="text-destructive">
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete
                   </DropdownMenuItem>
@@ -128,7 +133,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
           <Button 
             className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
             variant="challenge"
-            onClick={handleJoin}
+            onClick={(e) => { handleCardClick(e); handleJoin(); }}
           >
             <Target className="h-4 w-4" />
             Accept Challenge

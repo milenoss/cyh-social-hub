@@ -24,8 +24,11 @@ import {
 import { useDashboard } from "@/hooks/useDashboard";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { CreateChallengeDialog } from "@/components/CreateChallengeDialog";
+import { EditChallengeModal } from "@/components/EditChallengeModal";
+import { ProgressTracker } from "@/components/ProgressTracker";
 import { useChallenges } from "@/hooks/useChallenges";
 import { Link } from "react-router-dom";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -36,7 +39,28 @@ export default function Dashboard() {
     stats, 
     loading 
   } = useDashboard();
-  const { createChallenge } = useChallenges();
+  const { createChallenge, updateChallenge, deleteChallenge } = useChallenges();
+  const [editingChallenge, setEditingChallenge] = useState<ChallengeWithCreator | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedChallengeForProgress, setSelectedChallengeForProgress] = useState<any>(null);
+
+  const handleEditChallenge = (challenge: ChallengeWithCreator) => {
+    setEditingChallenge(challenge);
+    setEditModalOpen(true);
+  };
+
+  const handleDeleteChallenge = async (challengeId: string) => {
+    if (window.confirm('Are you sure you want to delete this challenge? This action cannot be undone.')) {
+      await deleteChallenge(challengeId);
+      // Refresh dashboard data
+      window.location.reload();
+    }
+  };
+
+  const handleProgressUpdate = (progress: number, note?: string) => {
+    // TODO: Implement progress update in database
+    console.log('Progress update:', { progress, note });
+  };
 
   if (authLoading || loading) {
     return (
@@ -230,8 +254,8 @@ export default function Dashboard() {
                           </div>
 
                           <Button className="w-full" variant="outline">
-                            <Play className="h-4 w-4" />
-                            Continue Challenge
+                            <Play className="h-4 w-4" onClick={() => setSelectedChallengeForProgress(participation)} />
+                            Track Progress
                           </Button>
                         </div>
                       </CardContent>
@@ -273,8 +297,8 @@ export default function Dashboard() {
                   <ChallengeCard 
                     key={challenge.id} 
                     challenge={challenge}
-                    onEdit={() => {}} // TODO: Implement edit
-                    onDelete={() => {}} // TODO: Implement delete
+                    onEdit={handleEditChallenge}
+                    onDelete={handleDeleteChallenge}
                   />
                 ))}
               </div>
@@ -422,6 +446,35 @@ export default function Dashboard() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Progress Tracker Modal */}
+        {selectedChallengeForProgress && (
+          <Dialog open={!!selectedChallengeForProgress} onOpenChange={() => setSelectedChallengeForProgress(null)}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Progress Tracker</DialogTitle>
+                <DialogDescription>
+                  Track your daily progress for this challenge
+                </DialogDescription>
+              </DialogHeader>
+              <ProgressTracker
+                challengeId={selectedChallengeForProgress.challenge_id}
+                challengeTitle={selectedChallengeForProgress.challenge.title}
+                duration={selectedChallengeForProgress.challenge.duration_days}
+                currentProgress={selectedChallengeForProgress.progress}
+                onUpdateProgress={handleProgressUpdate}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Edit Challenge Modal */}
+        <EditChallengeModal
+          challenge={editingChallenge}
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          onUpdateChallenge={updateChallenge}
+        />
       </div>
     </div>
   );
