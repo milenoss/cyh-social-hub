@@ -1,87 +1,28 @@
 import { useState } from "react";
-import { ChallengeCard, type Challenge } from "./ChallengeCard";
+import { ChallengeCard } from "./ChallengeCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { CreateChallengeDialog } from "./CreateChallengeDialog";
+import { useChallenges } from "@/hooks/useChallenges";
+import { useAuth } from "@/contexts/AuthContext";
+import { ChallengeWithCreator, DifficultyLevel } from "@/lib/supabase-types";
 
-// Sample challenge data
-const sampleChallenges: Challenge[] = [
-  {
-    id: "1",
-    title: "30-Day Morning Workout",
-    description: "Start your day with energy! 30 minutes of exercise every morning for 30 days. Build the habit that transforms your entire day.",
-    difficulty: "medium",
-    duration: "30 days",
-    category: "Fitness",
-    participants: 1247,
-    tags: ["fitness", "morning", "habit", "energy"]
-  },
-  {
-    id: "2", 
-    title: "Learn a Programming Language",
-    description: "Master the fundamentals of a new programming language in 90 days. Daily coding practice and weekly projects.",
-    difficulty: "hard",
-    duration: "90 days",
-    category: "Learning",
-    participants: 856,
-    tags: ["coding", "skills", "career", "technology"]
-  },
-  {
-    id: "3",
-    title: "Digital Detox Weekend",
-    description: "Disconnect from all digital devices for 48 hours. Rediscover the joy of offline activities and deep focus.",
-    difficulty: "easy",
-    duration: "2 days",
-    category: "Mindfulness",
-    participants: 2103,
-    tags: ["mindfulness", "focus", "wellness", "balance"]
-  },
-  {
-    id: "4",
-    title: "Write a Novel in a Month",
-    description: "Complete NaNoWriMo challenge - write 50,000 words in 30 days. Join a community of aspiring authors.",
-    difficulty: "extreme",
-    duration: "30 days", 
-    category: "Creativity",
-    participants: 423,
-    tags: ["writing", "creativity", "nanowrimo", "storytelling"]
-  },
-  {
-    id: "5",
-    title: "Cook Every Meal at Home",
-    description: "No takeout, no eating out. Cook every single meal at home for 14 days. Improve your cooking skills and save money.",
-    difficulty: "medium",
-    duration: "14 days",
-    category: "Lifestyle",
-    participants: 789,
-    tags: ["cooking", "health", "money", "skills"]
-  },
-  {
-    id: "6",
-    title: "Read 12 Books This Year",
-    description: "Commit to reading one book per month. Expand your knowledge and perspective through diverse literature.",
-    difficulty: "easy",
-    duration: "12 months",
-    category: "Learning",
-    participants: 1567,
-    tags: ["reading", "knowledge", "personal growth", "books"]
-  }
-];
-
-const categories = ["All", "Fitness", "Learning", "Mindfulness", "Creativity", "Lifestyle"];
-const difficulties = ["All", "easy", "medium", "hard", "extreme"];
+const categories = ["All", "Fitness", "Learning", "Mindfulness", "Creativity", "Lifestyle", "Health", "Career", "Social", "Financial", "Personal Growth"];
+const difficulties: (string | DifficultyLevel)[] = ["All", "easy", "medium", "hard", "extreme"];
 
 export function ChallengeGrid() {
+  const { user } = useAuth();
+  const { challenges, loading, createChallenge, updateChallenge, deleteChallenge, joinChallenge } = useChallenges();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
-  const [challenges] = useState<Challenge[]>(sampleChallenges);
 
   const filteredChallenges = challenges.filter(challenge => {
     const matchesSearch = challenge.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          challenge.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         challenge.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+                         challenge.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesCategory = selectedCategory === "All" || challenge.category === selectedCategory;
     const matchesDifficulty = selectedDifficulty === "All" || challenge.difficulty === selectedDifficulty;
@@ -90,9 +31,44 @@ export function ChallengeGrid() {
   });
 
   const handleJoinChallenge = (challengeId: string) => {
-    // TODO: Implement join challenge logic
-    console.log("Joining challenge:", challengeId);
+    if (!user) {
+      // Redirect to auth page or show login modal
+      window.location.href = '/auth';
+      return;
+    }
+    joinChallenge(challengeId);
   };
+
+  const handleEditChallenge = (challenge: ChallengeWithCreator) => {
+    // TODO: Implement edit challenge modal
+    console.log("Edit challenge:", challenge);
+  };
+
+  const handleDeleteChallenge = (challengeId: string) => {
+    deleteChallenge(challengeId);
+  };
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Choose Your Challenge
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Loading challenges...
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-80 bg-muted animate-pulse rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-muted/30">
@@ -104,6 +80,11 @@ export function ChallengeGrid() {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Every challenge is an opportunity to grow. Pick the one that scares and excites you the most.
           </p>
+          {user && (
+            <div className="mt-6">
+              <CreateChallengeDialog onCreateChallenge={createChallenge} />
+            </div>
+          )}
         </div>
 
         {/* Search and Filters */}
@@ -170,6 +151,8 @@ export function ChallengeGrid() {
               <ChallengeCard 
                 challenge={challenge} 
                 onJoin={handleJoinChallenge}
+                onEdit={handleEditChallenge}
+                onDelete={handleDeleteChallenge}
               />
             </div>
           ))}
@@ -177,14 +160,34 @@ export function ChallengeGrid() {
 
         {filteredChallenges.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No challenges found matching your criteria.</p>
-            <Button variant="outline" onClick={() => {
-              setSearchTerm("");
-              setSelectedCategory("All");
-              setSelectedDifficulty("All");
-            }}>
-              Clear Filters
-            </Button>
+            <p className="text-muted-foreground mb-4">
+              {challenges.length === 0 
+                ? "No challenges available yet. Be the first to create one!" 
+                : "No challenges found matching your criteria."
+              }
+            </p>
+            <div className="flex justify-center gap-4">
+              {challenges.length > 0 && (
+                <Button variant="outline" onClick={() => {
+                  setSearchTerm("");
+                  setSelectedCategory("All");
+                  setSelectedDifficulty("All");
+                }}>
+                  Clear Filters
+                </Button>
+              )}
+              {user && challenges.length === 0 && (
+                <CreateChallengeDialog 
+                  onCreateChallenge={createChallenge}
+                  trigger={
+                    <Button variant="hero">
+                      <Plus className="h-4 w-4" />
+                      Create First Challenge
+                    </Button>
+                  }
+                />
+              )}
+            </div>
           </div>
         )}
       </div>
