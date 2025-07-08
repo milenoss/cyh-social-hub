@@ -72,7 +72,7 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
     is_public: profile?.is_public ?? true,
     location: profile?.location || "",
     website: profile?.website || "",
-    social_links: (profile?.social_links as SocialLinks) || {}
+    social_links: (profile?.social_links && typeof profile.social_links === 'object' ? profile.social_links as SocialLinks : {})
   });
 
   const [notifications, setNotifications] = useState({
@@ -105,7 +105,7 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
         is_public: profile.is_public ?? true,
         location: profile.location || "",
         website: profile.website || "",
-        social_links: (profile.social_links as SocialLinks) || {}
+        social_links: (profile.social_links && typeof profile.social_links === 'object' ? profile.social_links as SocialLinks : {})
       });
     }
   }, [profile]);
