@@ -52,7 +52,7 @@ const Index = () => {
       <Navigation />
       
       {/* Main Content */}
-      <main>
+      <main className="pt-16">
         <Hero />
         <div id="challenges">
           <ChallengeGrid />
