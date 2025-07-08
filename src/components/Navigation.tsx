@@ -63,6 +63,12 @@ export function Navigation() {
                   <Trophy className="h-4 w-4" />
                   My Challenges
                 </Button>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/dashboard">
+                    <Target className="h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </Button>
                 <Button variant="ghost" size="sm">
                   <User className="h-4 w-4" />
                   Profile
