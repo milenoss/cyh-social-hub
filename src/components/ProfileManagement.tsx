@@ -29,6 +29,7 @@ import {
   Twitter,
   Instagram
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { Profile } from "@/lib/supabase-types";
 import { useToast } from "@/hooks/use-toast";
@@ -165,9 +166,9 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
             <Bell className="h-4 w-4" />
             <span className="hidden sm:inline">Notifications</span>
           </TabsTrigger>
-          <TabsTrigger value="achievements" className="flex items-center gap-2">
-            <Trophy className="h-4 w-4" />
-            <span className="hidden sm:inline">Achievements</span>
+          <TabsTrigger value="preferences" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Preferences</span>
           </TabsTrigger>
         </TabsList>
 
@@ -497,59 +498,56 @@ export function ProfileManagement({ profile, onUpdateProfile }: ProfileManagemen
           </Card>
         </TabsContent>
 
-        {/* Achievements Tab */}
-        <TabsContent value="achievements" className="space-y-6">
+        {/* Preferences Tab */}
+        <TabsContent value="preferences" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Your Achievements</CardTitle>
+              <CardTitle>App Preferences</CardTitle>
               <CardDescription>
-                Badges and milestones you've earned
+                Customize your app experience
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Mock achievements - in real app, this would come from the database */}
-                <div className="p-4 border rounded-lg text-center">
-                  <Trophy className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-                  <h3 className="font-semibold">First Challenge</h3>
-                  <p className="text-sm text-muted-foreground">Completed your first challenge</p>
-                  <Badge variant="secondary" className="mt-2">Earned</Badge>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Theme</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Choose your preferred color theme
+                  </p>
                 </div>
-                
-                <div className="p-4 border rounded-lg text-center">
-                  <Flame className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                  <h3 className="font-semibold">Streak Master</h3>
-                  <p className="text-sm text-muted-foreground">Maintained a 7-day streak</p>
-                  <Badge variant="secondary" className="mt-2">Earned</Badge>
+                <ThemeToggle />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Reduced Motion</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Minimize animations and transitions
+                  </p>
                 </div>
-                
-                <div className="p-4 border rounded-lg text-center opacity-50">
-                  <Target className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <h3 className="font-semibold">Challenge Creator</h3>
-                  <p className="text-sm text-muted-foreground">Create your first challenge</p>
-                  <Badge variant="outline" className="mt-2">Locked</Badge>
+                <Switch
+                  checked={false}
+                  onCheckedChange={() => {
+                    // TODO: Implement reduced motion preference
+                  }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Sound Effects</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Play sounds for interactions and achievements
+                  </p>
                 </div>
-                
-                <div className="p-4 border rounded-lg text-center opacity-50">
-                  <Award className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <h3 className="font-semibold">Mentor</h3>
-                  <p className="text-sm text-muted-foreground">Help 10 people complete challenges</p>
-                  <Badge variant="outline" className="mt-2">Locked</Badge>
-                </div>
-                
-                <div className="p-4 border rounded-lg text-center opacity-50">
-                  <Calendar className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <h3 className="font-semibold">Consistency King</h3>
-                  <p className="text-sm text-muted-foreground">Complete 30 days in a row</p>
-                  <Badge variant="outline" className="mt-2">Locked</Badge>
-                </div>
-                
-                <div className="p-4 border rounded-lg text-center opacity-50">
-                  <Trophy className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <h3 className="font-semibold">Champion</h3>
-                  <p className="text-sm text-muted-foreground">Complete 10 challenges</p>
-                  <Badge variant="outline" className="mt-2">Locked</Badge>
-                </div>
+                <Switch
+                  checked={true}
+                  onCheckedChange={() => {
+                    // TODO: Implement sound effects preference
+                  }}
+                />
               </div>
             </CardContent>
           </Card>

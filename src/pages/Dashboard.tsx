@@ -204,7 +204,7 @@ export default function Dashboard() {
             <TabsTrigger value="active">Active Challenges</TabsTrigger>
             <TabsTrigger value="created">My Challenges</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="profile">Settings</TabsTrigger>
           </TabsList>
 
           {/* Active Challenges */}
@@ -379,34 +379,10 @@ export default function Dashboard() {
 
           {/* Profile Tab */}
           <TabsContent value="profile">
-            <Tabs defaultValue="settings" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="settings">Profile Settings</TabsTrigger>
-                <TabsTrigger value="achievements">Achievements</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="settings">
-                <ProfileManagement 
-                  profile={profile}
-                  onUpdateProfile={updateProfile}
-                />
-              </TabsContent>
-              
-              <TabsContent value="achievements">
-                <AchievementSystem 
-                  userId={user.id}
-                  userStats={{
-                    challengesCompleted: stats.challengesCompleted,
-                    challengesCreated: userChallenges.length,
-                    currentStreak: stats.currentStreak,
-                    longestStreak: stats.longestStreak,
-                    totalPoints: stats.totalPoints,
-                    friendsHelped: 3, // Mock data
-                    commentsPosted: 12 // Mock data
-                  }}
-                />
-              </TabsContent>
-            </Tabs>
+            <ProfileManagement 
+              profile={profile}
+              onUpdateProfile={updateProfile}
+            />
           </TabsContent>
         </Tabs>
 
