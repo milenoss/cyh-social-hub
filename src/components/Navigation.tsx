@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { FriendRequestsNotification } from "@/components/FriendRequestsNotification";
 import { Badge } from "@/components/ui/badge";
 import { Target, User, Trophy, Users, LogOut } from "lucide-react";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
@@ -66,11 +67,15 @@ export function Navigation() {
             {user ? (
               <>
                 <Button variant="ghost" size="sm" className="hidden sm:flex">
-                  <Users className="h-4 w-4" />
-                  <Link to="/explore?tab=activity" className="flex items-center gap-2">
+                  <Link to="/dashboard?tab=friends" className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
                     Find Friends
                   </Link>
                 </Button>
+                
+                {/* Friend Requests Notification */}
+                <FriendRequestsNotification />
+                
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/dashboard?tab=active">
                   <Trophy className="h-4 w-4" />

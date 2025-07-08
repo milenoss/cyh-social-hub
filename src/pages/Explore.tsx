@@ -5,6 +5,7 @@ import { Navigation } from "@/components/Navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChallengeGrid } from "@/components/ChallengeGrid";
 import { ChallengeFeed } from "@/components/ChallengeFeed";
+import { FriendSystem } from "@/components/FriendSystem";
 import { Leaderboards } from "@/components/Leaderboards";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { 
@@ -24,7 +25,7 @@ export default function Explore() {
   // Handle tab switching from URL params
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['challenges', 'search', 'activity', 'leaderboards'].includes(tab)) {
+    if (tab && ['challenges', 'search', 'activity', 'leaderboards', 'friends'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -46,7 +47,7 @@ export default function Explore() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="challenges" className="flex items-center gap-2">
               <Target className="h-4 w-4" />
               <span className="hidden sm:inline">Challenges</span>
@@ -58,6 +59,10 @@ export default function Explore() {
             <TabsTrigger value="activity" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
               <span className="hidden sm:inline">Activity</span>
+            </TabsTrigger>
+            <TabsTrigger value="friends" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Friends</span>
             </TabsTrigger>
             <TabsTrigger value="leaderboards" className="flex items-center gap-2">
               <Trophy className="h-4 w-4" />
@@ -75,6 +80,10 @@ export default function Explore() {
 
           <TabsContent value="activity">
             <ChallengeFeed />
+          </TabsContent>
+          
+          <TabsContent value="friends">
+            <FriendSystem />
           </TabsContent>
 
           <TabsContent value="leaderboards">

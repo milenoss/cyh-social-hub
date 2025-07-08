@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigation } from "@/components/Navigation";
+import { FriendRequestsNotification } from "@/components/FriendRequestsNotification";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,8 @@ import {
 import { useDashboard } from "@/hooks/useDashboard";
 import { useProfile } from "@/hooks/useProfile";
 import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
+import { FriendSystem } from "@/components/FriendSystem";
+import { FriendSuggestions } from "@/components/FriendSuggestions";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { CreateChallengeDialog } from "@/components/CreateChallengeDialog";
 import { EditChallengeModal } from "@/components/EditChallengeModal";
@@ -244,8 +247,8 @@ export default function Dashboard() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="active">Active Challenges</TabsTrigger>
-            <TabsTrigger value="created">My Challenges</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="friends">Friends</TabsTrigger>
+            <TabsTrigger value="created">Created</TabsTrigger>
             <TabsTrigger value="profile">Settings</TabsTrigger>
           </TabsList>
 
@@ -327,6 +330,11 @@ export default function Dashboard() {
             )}
           </TabsContent>
 
+          {/* Friends Tab */}
+          <TabsContent value="friends">
+            <FriendSystem />
+          </TabsContent>
+
           {/* Created Challenges */}
           <TabsContent value="created" className="space-y-6">
             <div className="flex items-center justify-between">
@@ -368,7 +376,7 @@ export default function Dashboard() {
           </TabsContent>
 
           {/* Completed Challenges */}
-          <TabsContent value="completed" className="space-y-6">
+          <TabsContent value="completed" className="space-y-6 hidden">
             <h2 className="text-2xl font-bold">Completed Challenges</h2>
 
             {participatedChallenges.filter(p => p.status === 'completed').length === 0 ? (
@@ -421,10 +429,34 @@ export default function Dashboard() {
 
           {/* Profile Tab */}
           <TabsContent value="profile">
-            <ProfileManagement 
-              profile={profile}
-              onUpdateProfile={updateProfile}
-            />
+            <Tabs defaultValue="profile" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="profile">Profile Settings</TabsTrigger>
+                <TabsTrigger value="achievements">Achievements</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="profile">
+                <ProfileManagement 
+                  profile={profile}
+                  onUpdateProfile={updateProfile}
+                />
+              </TabsContent>
+              
+              <TabsContent value="achievements">
+                <AchievementSystem 
+                  userId={user.id}
+                  userStats={{
+                    challengesCompleted: stats.challengesCompleted,
+                    challengesCreated: userChallenges.length,
+                    currentStreak: stats.currentStreak,
+                    longestStreak: stats.longestStreak,
+                    totalPoints: stats.totalPoints,
+                    friendsHelped: 3, // Mock data
+                    commentsPosted: 12 // Mock data
+                  }}
+                />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
 

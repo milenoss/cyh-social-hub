@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Mail, X, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -48,12 +48,13 @@ export function EmailVerificationBanner() {
   };
 
   return (
-    <Alert className="border-amber-200 bg-amber-50 text-amber-800 mb-4">
+    <Alert variant="warning" className="mb-4">
       <Mail className="h-4 w-4" />
-      <AlertDescription className="flex items-center justify-between w-full">
-        <div className="flex-1">
-          <strong>Please verify your email address.</strong> Check your inbox for a verification link.
-        </div>
+      <div className="flex items-center justify-between w-full">
+        <AlertTitle>Email verification required</AlertTitle>
+        <AlertDescription className="flex-1">
+          Please check your inbox for a verification link to activate your account.
+        </AlertDescription>
         <div className="flex items-center gap-2 ml-4">
           <Button
             variant="outline"
@@ -78,7 +79,7 @@ export function EmailVerificationBanner() {
             <X className="h-3 w-3" />
           </Button>
         </div>
-      </AlertDescription>
+      </div>
     </Alert>
   );
 }

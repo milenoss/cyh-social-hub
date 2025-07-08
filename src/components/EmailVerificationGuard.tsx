@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Mail, Shield, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -105,13 +105,14 @@ export function EmailVerificationGuard({
   // If showing warning and user is not verified, show warning banner with content
   if (showWarning && user && !isVerified) {
     return (
-      <div>
-        <Alert className="border-amber-200 bg-amber-50 text-amber-800 mb-4">
+      <div className="space-y-4">
+        <Alert variant="warning">
           <Mail className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between w-full">
-            <div className="flex-1">
-              <strong>Please verify your email address.</strong> Some features may be limited until verified.
-            </div>
+          <div className="flex items-center justify-between w-full">
+            <AlertTitle>Email verification required</AlertTitle>
+            <AlertDescription className="flex-1">
+              Some features may be limited until you verify your email address.
+            </AlertDescription>
             <Button
               variant="outline"
               size="sm"
@@ -126,7 +127,7 @@ export function EmailVerificationGuard({
               )}
               {isResending ? "Sending..." : "Resend"}
             </Button>
-          </AlertDescription>
+          </div>
         </Alert>
         {children}
       </div>
