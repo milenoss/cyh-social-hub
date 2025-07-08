@@ -22,12 +22,12 @@ export function Hero() {
         <div className="max-w-4xl mx-auto animate-slide-up">
           {/* Main heading */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-            Choose Your Hard
+            Transform Your Life, One Challenge at a Time
           </h1>
           
           {/* Subtitle */}
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Life's going to be hard no matter what. You might as well choose your hard and make it meaningful.
+            Join our community of achievers and take on challenges that will reshape your habits, boost your productivity, and elevate your lifestyle.
           </p>
           
           {/* CTA Buttons */}
