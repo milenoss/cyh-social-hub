@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Target, Users, Trophy, TrendingUp } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { Link } from "react-router-dom";
 
 export function Hero() {
   const { actualTheme } = useTheme();
