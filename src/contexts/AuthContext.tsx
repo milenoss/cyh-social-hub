@@ -49,8 +49,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       options: {
         emailRedirectTo: redirectUrl,
         data: metadata,
-        // Ensure email confirmation is required
-        emailRedirectTo: redirectUrl
       }
     });
     return { error };
