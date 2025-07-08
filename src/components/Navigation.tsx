@@ -1,7 +1,29 @@
 import { Button } from "@/components/ui/button";
-import { Target, User, Trophy, Users } from "lucide-react";
+import { Target, User, Trophy, Users, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export function Navigation() {
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully.",
+      });
+    }
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
       <div className="container mx-auto px-4">
@@ -31,18 +53,33 @@ export function Navigation() {
 
           {/* User Actions */}
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
-              <Users className="h-4 w-4" />
-              Find Friends
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Trophy className="h-4 w-4" />
-              My Challenges
-            </Button>
-            <Button variant="outline" size="sm">
-              <User className="h-4 w-4" />
-              Profile
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" size="sm" className="hidden sm:flex">
+                  <Users className="h-4 w-4" />
+                  Find Friends
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Trophy className="h-4 w-4" />
+                  My Challenges
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <User className="h-4 w-4" />
+                  Profile
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button variant="hero" size="sm" asChild>
+                <Link to="/auth">
+                  <User className="h-4 w-4" />
+                  Sign In
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>
