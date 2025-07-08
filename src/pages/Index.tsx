@@ -2,6 +2,7 @@ import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
 import { ChallengeGrid } from "@/components/ChallengeGrid";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { EmailVerificationGuard } from "@/components/EmailVerificationGuard";
 import { useEffect, useState } from "react";
@@ -56,7 +57,7 @@ const Index = () => {
       <EmailVerificationGuard showWarning={user ? true : false}>
         <main className="pt-16">
         <Hero />
-        <div id="challenges">
+        <div id="challenges" className="scroll-mt-20">
           <ChallengeGrid />
         </div>
         </main>
@@ -71,12 +72,16 @@ const Index = () => {
               Join thousands of people who decided to make their struggles meaningful. 
               The path won't be easy, but it will be worth it.
             </p>
-            <div className="flex justify-center space-x-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
               <span>Free Forever</span>
               <span>•</span>
               <span>Community Driven</span>
               <span>•</span>
               <span>Your Growth Matters</span>
+            </div>
+            <div className="mt-6 flex justify-center gap-4">
+              <Link to="/auth" className="text-primary hover:underline">Sign In</Link>
+              <Link to="/explore" className="text-primary hover:underline">Explore Challenges</Link>
             </div>
           </div>
         </div>

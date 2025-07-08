@@ -192,7 +192,7 @@ export function ChallengeGrid() {
                   Clear Filters
                 </Button>
               )}
-              {user && challenges.length === 0 && (
+              {user && challenges.length === 0 ? (
                 <CreateChallengeDialog 
                   onCreateChallenge={createChallenge}
                   trigger={
@@ -202,6 +202,13 @@ export function ChallengeGrid() {
                     </Button>
                   }
                 />
+              ) : !user && challenges.length === 0 && (
+                <Button variant="hero" asChild>
+                  <Link to="/auth">
+                    <Plus className="h-4 w-4" />
+                    Sign In to Create Challenge
+                  </Link>
+                </Button>
               )}
             </div>
           </div>

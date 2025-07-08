@@ -32,11 +32,15 @@ export function Hero() {
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button variant="hero" size="xl" className="animate-pulse-glow shadow-lg hover:shadow-xl">
+            <Button variant="hero" size="xl" className="animate-pulse-glow shadow-lg hover:shadow-xl" asChild>
+              <Link to="/explore?tab=challenges">
               Start Your Challenge
+              </Link>
             </Button>
-            <Button variant="outline" size="xl" className="hover:shadow-md">
+            <Button variant="outline" size="xl" className="hover:shadow-md" asChild>
+              <Link to="/explore?tab=challenges">
               Browse Challenges
+              </Link>
             </Button>
           </div>
           
