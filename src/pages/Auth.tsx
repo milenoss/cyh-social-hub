@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("signin");
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -112,8 +113,8 @@ export default function Auth() {
 
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin" onClick={() => setActiveTab("signin")}>Sign In</TabsTrigger>
+              <TabsTrigger value="signup" onClick={() => setActiveTab("signup")}>Sign Up</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">

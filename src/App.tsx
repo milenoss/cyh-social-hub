@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import EmailVerification from "./pages/EmailVerification";
+import PasswordReset from "./pages/PasswordReset";
 import Dashboard from "./pages/Dashboard";
 import Explore from "./pages/Explore";
 import NotFound from "./pages/NotFound";
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/verify" element={<EmailVerification />} />
+            <Route path="/auth/reset-password" element={<PasswordReset />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/explore" element={<Explore />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
