@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Target, User, Trophy, Users, LogOut } from "lucide-react";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
@@ -59,6 +60,9 @@ export function Navigation() {
 
           {/* User Actions */}
           <div className="flex items-center space-x-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {user ? (
               <>
                 <Button variant="ghost" size="sm" className="hidden sm:flex">
@@ -189,14 +193,14 @@ export function Navigation() {
                 
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" />
-                  <span className="hidden sm:inline ml-1">Sign Out</span>
+                  <span className="hidden sm:inline ml-2">Sign Out</span>
                 </Button>
               </>
             ) : (
               <Button variant="hero" size="sm" asChild>
                 <Link to="/auth">
                   <User className="h-4 w-4" />
-                  Sign In
+                  <span className="ml-2">Sign In</span>
                 </Link>
               </Button>
             )}
