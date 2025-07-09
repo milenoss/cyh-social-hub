@@ -4,7 +4,7 @@
 
 A modern, social challenge platform that helps people build meaningful habits, connect with like-minded individuals, and track their personal growth journey.
 
-![Choose Your Hard](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![React](https://img.shields.io/badge/React-18.3.1-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-blue.svg)
@@ -42,7 +42,7 @@ A modern, social challenge platform that helps people build meaningful habits, c
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/choose-your-hard.git
+git clone https://github.com/your-username/choose-your-hard.git
 cd choose-your-hard
 ```
 
@@ -238,9 +238,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Documentation**: [Wiki](https://github.com/yourusername/choose-your-hard/wiki)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/choose-your-hard/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/choose-your-hard/discussions)
+- **Documentation**: [Wiki](https://github.com/your-username/choose-your-hard/wiki)
+- **Issues**: [GitHub Issues](https://github.com/your-username/choose-your-hard/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-username/choose-your-hard/discussions)
 
 ## 🌟 Show Your Support
 
@@ -253,6 +253,6 @@ If you like this project, please consider:
 
 ---
 
-**Made with ❤️ by the Choose Your Hard team**
+**Made with ❤️ by the Choose Your Hard Team**
 
 *Remember: Life's going to be hard no matter what. Choose your hard and make it meaningful.*

@@ -2,15 +2,15 @@
   "name": "vite_react_shadcn_ts",
   "version": "1.0.1",
   "description": "A modern, social challenge platform that helps people build meaningful habits and track their personal growth journey.",
-  "author": "Choose Your Hard Team",
+  "author": "Your Name",
   "license": "MIT",
-  "homepage": "https://github.com/yourusername/choose-your-hard#readme",
+  "homepage": "https://github.com/your-username/choose-your-hard#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/choose-your-hard.git"
+    "url": "git+https://github.com/your-username/choose-your-hard.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/choose-your-hard/issues"
+    "url": "https://github.com/your-username/choose-your-hard/issues"
   },
   "keywords": [
     "challenges",
