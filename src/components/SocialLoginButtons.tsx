@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Mail, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,7 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleSocialLogin = async (provider: 'google' | string) => {
+  const handleSocialLogin = async (provider: 'google') => {
     setIsLoading(provider);
     setError(null);
     try {
@@ -30,10 +30,19 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
       
       if (error) throw error;
     } catch (error) {
-      setError((error as Error).message);
+      console.error(`Error signing in with ${provider}:`, error);
+      setError(`Failed to sign in with ${provider}. ${(error as Error).message}`);
+      toast({
+        title: "Login Error",
+        description: (error as Error).message || `Failed to sign in with ${provider}`,
+        variant: "destructive",
+      });
     } finally {
-      setIsLoading(null);
-    }
+      // We don't set isLoading to null here because the page will redirect on success
+      // Only set it to null if there's an error
+      if (error) {
+        setIsLoading(null);
+      }
   };
 
   return (
@@ -60,7 +69,7 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
         variant="outline" 
         className="w-full"
         onClick={() => handleSocialLogin('google')}
-        disabled={!!isLoading}
+        disabled={isLoading === 'google'}
       >
         {isLoading === 'google' ? (
           <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -85,7 +94,6 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
           </svg>
         )}
         Continue with Google
-      </Button>
-    </div>
+      </Button>      
   );
 }
