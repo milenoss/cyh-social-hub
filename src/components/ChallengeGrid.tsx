@@ -4,6 +4,7 @@ import { ChallengeDetailsModal } from "./ChallengeDetailsModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Filter, Search, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { CreateChallengeDialog } from "./CreateChallengeDialog";
 import { useChallenges } from "@/hooks/useChallenges";
@@ -192,21 +193,21 @@ export function ChallengeGrid() {
                   Clear Filters
                 </Button>
               )}
-              {user && challenges.length === 0 ? (
+              {user ? (
                 <CreateChallengeDialog 
                   onCreateChallenge={createChallenge}
                   trigger={
                     <Button variant="hero">
                       <Plus className="h-4 w-4" />
-                      Create First Challenge
+                      {challenges.length === 0 ? "Create First Challenge" : "Create Challenge"}
                     </Button>
                   }
                 />
-              ) : !user && challenges.length === 0 && (
+              ) : (
                 <Button variant="hero" asChild>
                   <Link to="/auth">
                     <Plus className="h-4 w-4" />
-                    Sign In to Create Challenge
+                    {challenges.length === 0 ? "Sign In to Create Challenge" : "Sign In to Create"}
                   </Link>
                 </Button>
               )}

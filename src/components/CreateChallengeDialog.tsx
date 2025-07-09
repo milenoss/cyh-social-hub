@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from "@/components/ui/badge";
 import { Plus, X } from "lucide-react";
 import { DifficultyLevel } from "@/lib/supabase-types";
-import { EmailVerificationGuard } from "@/components/EmailVerificationGuard";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreateChallengeDialogProps {
   onCreateChallenge: (challengeData: any) => Promise<any>;
@@ -29,6 +30,8 @@ const difficulties: { value: DifficultyLevel; label: string; description: string
 
 export function CreateChallengeDialog({ onCreateChallenge, trigger }: CreateChallengeDialogProps) {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -91,17 +94,28 @@ export function CreateChallengeDialog({ onCreateChallenge, trigger }: CreateChal
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    // Check if user is verified before allowing to open the dialog
+    if (newOpen && user && !user.email_confirmed_at) {
+      toast({
+        title: "Email verification required",
+        description: "Please verify your email address to create challenges.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <EmailVerificationGuard requireVerification={true}>
-          {trigger || (
-            <Button variant="hero" size="lg">
-              <Plus className="h-5 w-5" />
-              Create Challenge
-            </Button>
-          )}
-        </EmailVerificationGuard>
+        {trigger || (
+          <Button variant="hero" size="lg">
+            <Plus className="h-5 w-5" />
+            Create Challenge
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
