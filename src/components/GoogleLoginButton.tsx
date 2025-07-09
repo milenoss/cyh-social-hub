@@ -34,19 +34,30 @@ export function GoogleLoginButton({
     
     try {
       // Log the OAuth attempt to the database
-      await supabase.rpc('log_oauth_attempt', {
-        provider: 'google',
-        redirect_url: redirectTo || `${window.location.origin}/dashboard`
-      });
+      try {
+        await supabase.rpc('log_oauth_event', {
+          provider: 'google',
+          event_type: 'google_oauth_attempt',
+          redirect_url: redirectTo || `${window.location.origin}/dashboard`,
+          details: {
+            browser: navigator.userAgent,
+            timestamp: new Date().toISOString(),
+            location: window.location.href
+          }
+        });
+      } catch (logError) {
+        console.warn("[GoogleLoginButton] Failed to log OAuth attempt:", logError);
+      }
       
-      // Initiate the OAuth flow
+      // Initiate the OAuth flow with specific parameters for Google
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectTo || `${window.location.origin}/dashboard`,
           queryParams: {
             prompt: 'consent',
-            access_type: 'offline'
+            access_type: 'offline',
+            include_granted_scopes: 'true'
           }
         }
       });
@@ -54,6 +65,21 @@ export function GoogleLoginButton({
       if (error) throw error;
       
       console.log("[GoogleLoginButton] OAuth flow initiated successfully", data);
+      
+      // Log success
+      try {
+        await supabase.rpc('log_oauth_event', {
+          provider: 'google',
+          event_type: 'google_oauth_success',
+          redirect_url: redirectTo || `${window.location.origin}/dashboard`,
+          details: {
+            provider_url: data.url,
+            timestamp: new Date().toISOString()
+          }
+        });
+      } catch (logError) {
+        console.warn("[GoogleLoginButton] Failed to log OAuth success:", logError);
+      }
       
       if (onSuccess) {
         onSuccess();
@@ -65,10 +91,16 @@ export function GoogleLoginButton({
       
       // Log the error to the database
       try {
-        await supabase.rpc('log_oauth_attempt', {
+        await supabase.rpc('log_oauth_event', {
           provider: 'google',
+          event_type: 'google_oauth_error',
           redirect_url: redirectTo || `${window.location.origin}/dashboard`,
-          error_message: error.message || "Unknown error"
+          details: {
+            error_message: error.message || "Unknown error",
+            error_code: error.code,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+          }
         });
       } catch (logError) {
         console.error("[GoogleLoginButton] Failed to log error:", logError);

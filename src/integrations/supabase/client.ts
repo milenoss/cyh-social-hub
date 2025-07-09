@@ -10,6 +10,12 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.error("Missing Supabase environment variables. Please check your .env file.");
   console.log("Current environment:", import.meta.env.MODE);
 }
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error("Missing Supabase environment variables. Please check your .env file.");
+  console.log("Current environment:", import.meta.env.MODE);
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -18,13 +24,23 @@ export const supabase = createClient<Database>(
   SUPABASE_URL || "",
   SUPABASE_ANON_KEY || "",
   {
+  SUPABASE_URL || "",
+  SUPABASE_ANON_KEY || "",
+  {
   auth: {
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
     debug: true // Enable debug mode to see auth-related logs
+    debug: true // Enable debug mode to see auth-related logs
   }
 });
+
+// Log Supabase initialization for debugging
+if (import.meta.env.DEV) {
+  console.log("Supabase client initialized with URL:", SUPABASE_URL ? `${SUPABASE_URL.substring(0, 15)}...` : "Not set");
+  console.log("Auth debug mode:", true);
+}
 
 // Log Supabase initialization for debugging
 if (import.meta.env.DEV) {
