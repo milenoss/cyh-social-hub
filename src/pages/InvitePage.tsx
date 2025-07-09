@@ -36,8 +36,6 @@ export default function InvitePage() {
 
     const fetchInvitationDetails = async () => {
       try {
-        // In a real implementation, you would fetch the invitation details
-        // For now, we'll simulate this with a delay
         const { data, error } = await supabase.rpc('get_invitation_details', {
           invitation_token: token
         });
