@@ -38,6 +38,8 @@ import { AccountDeletionFlow } from "@/components/AccountDeletionFlow";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 import { EmailVerificationGuard } from "@/components/EmailVerificationGuard";
 
 // Check for social login redirect
@@ -59,6 +61,7 @@ const checkForSocialLoginRedirect = () => {
 
 export default function Dashboard() {
   const { user, loading: authLoading, refreshSession } = useAuth();
+  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const { 
     profile, 
