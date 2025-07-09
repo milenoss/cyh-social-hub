@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ChallengeParticipant } from '@/lib/supabase-types';
+import { ChallengeParticipant, ChallengeWithCreator } from '@/lib/supabase-types';
 import { useToast } from '@/hooks/use-toast';
 
 export function useChallengeParticipation(challengeId?: string) {
   const [participation, setParticipation] = useState<ChallengeParticipant | null>(null);
+  const [challenge, setChallenge] = useState<ChallengeWithCreator | null>(null);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -27,6 +28,11 @@ export function useChallengeParticipation(challengeId?: string) {
       }
 
       setParticipation(data || null);
+      
+      // Also fetch the challenge details if we have participation
+      if (data) {
+        fetchChallengeDetails();
+      }
     } catch (error: any) {
       // Only log errors that are not "no rows found" (PGRST116)
       if (error.code !== 'PGRST116') {
@@ -34,6 +40,31 @@ export function useChallengeParticipation(challengeId?: string) {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchChallengeDetails = async () => {
+    if (!challengeId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .select(`
+          *,
+          creator:profiles!challenges_created_by_fkey(
+            id,
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('id', challengeId)
+        .single();
+
+      if (error) throw error;
+      setChallenge(data);
+    } catch (error) {
+      console.error('Error fetching challenge details:', error);
     }
   };
 
@@ -130,6 +161,7 @@ export function useChallengeParticipation(challengeId?: string) {
 
       // Update user profile stats if completed
       if (updates.status === 'completed') {
+        const pointsReward = challenge?.points_reward || 100;
         await supabase.rpc('update_user_stats_on_completion', {
           challenge_points: challenge.points_reward || 100
         });
@@ -165,6 +197,7 @@ export function useChallengeParticipation(challengeId?: string) {
   return {
     participation,
     loading,
+    challenge,
     joinChallenge,
     leaveChallenge,
     updateProgress,

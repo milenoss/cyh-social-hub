@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChallengeComments } from "./ChallengeComments";
+import { InviteFriendsDialog } from "./InviteFriendsDialog";
 import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
 import { 
   Users, 
@@ -120,6 +121,18 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                 <Share2 className="h-4 w-4" />
                 Share
               </Button>
+              {hasJoined && (
+                <InviteFriendsDialog 
+                  challengeId={challenge.id}
+                  challengeTitle={challenge.title}
+                  trigger={
+                    <Button variant="outline" size="sm">
+                      <Users className="h-4 w-4 mr-2" />
+                      Invite Friends
+                    </Button>
+                  }
+                />
+              )}
               <Button variant="outline" size="sm">
                 <Flag className="h-4 w-4" />
                 Report

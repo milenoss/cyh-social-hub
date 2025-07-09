@@ -25,6 +25,7 @@ import { EditChallengeModal } from "@/components/EditChallengeModal";
 import { ProgressTracker } from "@/components/ProgressTracker";
 import { ProfileManagement } from "@/components/ProfileManagement";
 import { AchievementSystem } from "@/components/AchievementSystem";
+import { InvitationsTab } from "@/components/InvitationsTab";
 import { useChallenges } from "@/hooks/useChallenges";
 import { AccountDeletionFlow } from "@/components/AccountDeletionFlow";
 import { Link } from "react-router-dom";
@@ -241,9 +242,10 @@ export default function Dashboard() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="active">Active Challenges</TabsTrigger>
             <TabsTrigger value="created">Created</TabsTrigger>
+            <TabsTrigger value="invitations">Invitations</TabsTrigger>
             <TabsTrigger value="profile">Settings</TabsTrigger>
           </TabsList>
 
@@ -373,6 +375,14 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Invitations Tab */}
+          <TabsContent value="invitations" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Challenge Invitations</h2>
+            </div>
+            <InvitationsTab />
           </TabsContent>
 
           {/* Profile Tab */}

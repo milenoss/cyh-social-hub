@@ -2,12 +2,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
 import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle, Calendar, Award } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChallengeWithCreator } from "@/lib/supabase-types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
+import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { format, differenceInDays } from "date-fns";
+import { Separator } from "@/components/ui/separator";
+import { InviteFriendsDialog } from "./InviteFriendsDialog";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
@@ -44,12 +51,32 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [checkInNote, setCheckInNote] = useState("");
   const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [checkInNote, setCheckInNote] = useState("");
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
 
-  const handleJoin = () => {
-    if (hasJoined) {
       setShowProgressModal(true);
-      return; 
+      return;
     }
+    setShowJoinModal(true);
+  };
+
+  const confirmJoin = async () => {
+    const success = await joinChallenge();
+    if (success) {
+      setShowJoinModal(false);
+      setShowProgressModal(true);
+    }
+  };
+
+  const handleCheckIn = async () => {
+    if (!participation) return;
+    
+    setIsCheckingIn(true);
+    const newProgress = Math.min(participation.progress + (100 / challenge.duration_days), 100);
+    await updateProgress(newProgress, checkInNote);
+    setCheckInNote("");
     setShowJoinModal(true);
   };
 
@@ -94,8 +121,17 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
     Math.max(0, challenge.duration_days - differenceInDays(new Date(), new Date(participation.started_at))) : 
     challenge.duration_days;
 
+  const todayCheckedIn = participation?.last_check_in ? 
+    new Date(participation.last_check_in).toDateString() === new Date().toDateString() : false;
+
+  // Calculate days remaining
+  const daysRemaining = participation?.started_at ? 
+    Math.max(0, challenge.duration_days - differenceInDays(new Date(), new Date(participation.started_at))) : 
+    challenge.duration_days;
+
   return (
     <>
+      <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group cursor-pointer">
       <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group cursor-pointer">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between mb-2">
@@ -193,6 +229,9 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               <div className="text-sm text-green-600 font-medium mb-1">
                 <Button 
                   variant="link" 
+                  onClick={(e) => {
+                <Button
+                  variant="link"
                   onClick={(e) => {
                     handleCardClick(e);
                     setShowProgressModal(true);
@@ -338,6 +377,150 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
                   </Button>
                 </div>
               )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowProgressModal(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      </Card>
+
+      {/* Join Challenge Modal */}
+      <Dialog open={showJoinModal} onOpenChange={setShowJoinModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Join Challenge</DialogTitle>
+            <DialogDescription>
+              Are you ready to accept this challenge?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <h3 className="font-medium">{challenge.title}</h3>
+              <p className="text-sm text-muted-foreground">{challenge.description}</p>
+            </div>
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span>{challenge.duration_days} days</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Badge className={`${difficultyColors[challenge.difficulty]} text-white`}>
+                  {difficultyLabels[challenge.difficulty]}
+                </Badge>
+              </div>
+            </div>
+            <div className="bg-muted/50 p-4 rounded-lg">
+              <p className="text-sm font-medium mb-2">What to expect:</p>
+              <ul className="text-sm space-y-1 list-disc pl-5">
+                <li>Daily check-ins to track your progress</li>
+                <li>Complete the challenge in {challenge.duration_days} days</li>
+                <li>Earn {challenge.points_reward || 100} points upon completion</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowJoinModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmJoin} disabled={loading}>
+              {loading ? "Joining..." : "Accept Challenge"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Progress Modal */}
+      <Dialog open={showProgressModal} onOpenChange={setShowProgressModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Challenge Progress</DialogTitle>
+            <DialogDescription>
+              Track your progress for {challenge.title}
+            </DialogDescription>
+          </DialogHeader>
+          {participation && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Overall Progress</span>
+                  <span>{participation.progress}%</span>
+                </div>
+                <Progress value={participation.progress} className="h-2.5" />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Day {Math.max(1, challenge.duration_days - daysRemaining)} of {challenge.duration_days}</span>
+                  <span>{daysRemaining} days remaining</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span>Started: {format(new Date(participation.started_at || ''), 'MMM d, yyyy')}</span>
+                </div>
+                <Badge variant={participation.status === 'completed' ? 'default' : 'secondary'}>
+                  {participation.status}
+                </Badge>
+              </div>
+
+              {participation.status === 'completed' ? (
+                <div className="bg-green-50 p-4 rounded-lg text-center">
+                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                  <p className="font-medium text-green-800">Challenge Completed!</p>
+                  <p className="text-sm text-green-700">Congratulations on your achievement!</p>
+                  <div className="mt-3 flex items-center justify-center gap-2">
+                    <Award className="h-5 w-5 text-yellow-600" />
+                    <span className="font-medium text-yellow-700">+{challenge.points_reward || 100} points earned</span>
+                  </div>
+                </div>
+              ) : todayCheckedIn ? (
+                <div className="bg-green-50 p-4 rounded-lg text-center">
+                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                  <p className="font-medium text-green-800">Already checked in today!</p>
+                  <p className="text-sm text-green-700">Great job staying consistent!</p>
+                  <p className="text-xs text-green-600 mt-2">
+                    Last check-in: {format(new Date(participation.last_check_in || ''), 'MMM d, yyyy h:mm a')}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3 pt-2">
+                  <Separator />
+                  <h3 className="font-medium flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    Daily Check-in
+                  </h3>
+                  <Textarea
+                    placeholder="How did today go? Any notes or reflections..."
+                    value={checkInNote}
+                    onChange={(e) => setCheckInNote(e.target.value)}
+                    rows={3}
+                  />
+                  <Button 
+                    onClick={handleCheckIn} 
+                    className="w-full" 
+                    disabled={isCheckingIn}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    {isCheckingIn ? "Checking in..." : "Check In for Today"}
+                  </Button>
+                </div>
+              )}
+              
+              <div className="pt-2">
+                <InviteFriendsDialog
+                  challengeId={challenge.id}
+                  challengeTitle={challenge.title}
+                  trigger={
+                    <Button variant="outline" className="w-full">
+                      <Users className="h-4 w-4 mr-2" />
+                      Invite Friends to Join
+                    </Button>
+                  }
+                />
+              </div>
             </div>
           )}
           <DialogFooter>
