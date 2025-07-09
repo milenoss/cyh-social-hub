@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Github, Mail, AlertCircle } from "lucide-react";
+import { Mail, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,7 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleSocialLogin = async (provider: 'google' | 'github' | 'apple') => {
+  const handleSocialLogin = async (provider: 'google') => {
     setIsLoading(provider);
     setError(null);
     try {
@@ -29,36 +29,6 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
       });
       
       if (error) throw error;
-      
-      // The user will be redirected to the OAuth provider if successful
-      console.log("OAuth sign-in initiated", data);
-    } catch (error: any) {
-      console.error(`Error signing in with ${provider}:`, error);
-      setError(`Failed to sign in with ${provider}. ${error.message}`);
-      toast({
-        title: "Login Error",
-        description: error.message || `Failed to sign in with ${provider}`,
-        variant: "destructive",
-      });
-    } finally {
-      // We don't set isLoading to null here because the page will redirect on success
-      // Only set it to null if there's an error
-      if (error) {
-        setIsLoading(null);
-      }
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t"></span>
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
         </div>
       </div>
       
@@ -72,7 +42,7 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
       <div className="grid grid-cols-2 gap-3">
         <Button 
           variant="outline" 
-          className="w-full" 
+          className="w-full col-span-2" 
           onClick={() => handleSocialLogin('google')}
           disabled={!!isLoading}
         >
