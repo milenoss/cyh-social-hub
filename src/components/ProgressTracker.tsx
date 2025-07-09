@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Progress } from "@/components/ui/progress"; 
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
@@ -31,7 +31,7 @@ interface ProgressTrackerProps {
   challengeTitle: string;
   duration: number;
   currentProgress: number;
-  onUpdateProgress: (progress: number, note?: string) => Promise<boolean>;
+  onUpdateProgress: (progress: number, note?: string) => Promise<boolean>; 
 }
 
 // Mock progress entries - in real app, this would come from the database
@@ -56,6 +56,22 @@ export function ProgressTracker({
   const [note, setNote] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [todayCheckedIn, setTodayCheckedIn] = useState(false);
+
+  // Check if user has already checked in today
+  useEffect(() => {
+    if (participation?.last_check_in) {
+      const lastCheckIn = new Date(participation.last_check_in);
+      const today = new Date();
+      setTodayCheckedIn(
+        lastCheckIn.getDate() === today.getDate() &&
+        lastCheckIn.getMonth() === today.getMonth() &&
+        lastCheckIn.getFullYear() === today.getFullYear()
+      );
+    } else {
+      setTodayCheckedIn(false);
+    }
+  }, [participation]);
 
   const completedDays = entries.filter(entry => entry.completed).length;
   const currentStreak = calculateCurrentStreak(entries);
@@ -132,7 +148,7 @@ export function ProgressTracker({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5" />
+            <CheckCircle className="h-5 w-5" /> 
             Daily Check-in
           </CardTitle>
           <CardDescription>
@@ -140,12 +156,18 @@ export function ProgressTracker({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {todayEntry?.completed ? (
+          {todayCheckedIn ? (
             <div className="text-center py-4">
               <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-2" />
               <p className="font-medium text-green-600">Already checked in today!</p>
-              {todayEntry.note && (
-                <p className="text-sm text-muted-foreground mt-2">"{todayEntry.note}"</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Last check-in: {format(new Date(participation?.last_check_in || new Date()), 'MMM d, yyyy h:mm a')}
+              </p>
+              {participation?.status === 'completed' && (
+                <div className="mt-3 flex items-center justify-center gap-2">
+                  <Award className="h-5 w-5 text-yellow-600" />
+                  <span className="font-medium text-yellow-700">Challenge completed!</span>
+                </div>
               )}
             </div>
           ) : (

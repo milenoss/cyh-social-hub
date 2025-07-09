@@ -5,7 +5,9 @@ export type ChallengeInsert = Database['public']['Tables']['challenges']['Insert
 export type ChallengeUpdate = Database['public']['Tables']['challenges']['Update'];
   last_check_in?: string | null;
 
-export type ChallengeParticipant = Database['public']['Tables']['challenge_participants']['Row'];
+export interface ChallengeParticipant extends Database['public']['Tables']['challenge_participants']['Row'] {
+  last_check_in?: string | null;
+}
 export type ChallengeParticipantInsert = Database['public']['Tables']['challenge_participants']['Insert'];
 export type ChallengeParticipantUpdate = Database['public']['Tables']['challenge_participants']['Update'];
 

@@ -305,12 +305,18 @@ export default function Dashboard() {
                           <div className="flex items-center gap-4 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              <span>{participation.challenge.duration_days} days</span>
+                              <span>{participation.challenge.duration_days} days</span> 
                             </div>
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              <span>Started {new Date(participation.started_at!).toLocaleDateString()}</span>
+                              <span>Started {new Date(participation.started_at!).toLocaleDateString()}</span> 
                             </div>
+                            {participation.last_check_in && (
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="h-3 w-3" />
+                              <span>Last check-in: {new Date(participation.last_check_in).toLocaleDateString()}</span>
+                            </div>
+                            )}
                           </div>
 
                           <Button 

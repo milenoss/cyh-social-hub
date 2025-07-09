@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
-import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle, Calendar } from "lucide-react";
+import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle, Calendar, Award } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChallengeWithCreator } from "@/lib/supabase-types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,8 @@ import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
+import { format, differenceInDays } from "date-fns";
+import { Separator } from "@/components/ui/separator";
 
 interface ChallengeCardProps {
   challenge: ChallengeWithCreator;
@@ -86,6 +88,11 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
 
   const todayCheckedIn = participation?.last_check_in ? 
     new Date(participation.last_check_in).toDateString() === new Date().toDateString() : false;
+
+  // Calculate days remaining
+  const daysRemaining = participation?.started_at ? 
+    Math.max(0, challenge.duration_days - differenceInDays(new Date(), new Date(participation.started_at))) : 
+    challenge.duration_days;
 
   return (
     <>
@@ -177,7 +184,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               }}
               disabled={loading}
             >
-              <Target className="h-4 w-4" />
+              <Target className="h-4 w-4 mr-2" />
               {loading ? "Joining..." : "Accept Challenge"}
             </Button>
           )}
@@ -245,14 +252,14 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               </ul>
             </div>
           </div>
-          <div className="flex justify-between">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setShowJoinModal(false)}>
               Cancel
             </Button>
             <Button onClick={confirmJoin} disabled={loading}>
               {loading ? "Joining..." : "Accept Challenge"}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -273,24 +280,48 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
                   <span>{participation.progress}%</span>
                 </div>
                 <Progress value={participation.progress} className="h-2.5" />
-                <p className="text-xs text-muted-foreground">
-                  {Math.ceil((challenge.duration_days * (100 - participation.progress)) / 100)} days remaining
-                </p>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Day {Math.max(1, challenge.duration_days - daysRemaining)} of {challenge.duration_days}</span>
+                  <span>{daysRemaining} days remaining</span>
+                </div>
               </div>
               
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>Started: {new Date(participation.started_at || '').toLocaleDateString()}</span>
+                  <span>Started: {format(new Date(participation.started_at || ''), 'MMM d, yyyy')}</span>
                 </div>
                 <Badge variant={participation.status === 'completed' ? 'default' : 'secondary'}>
                   {participation.status}
                 </Badge>
               </div>
-              
-              {!todayCheckedIn && participation.status !== 'completed' && (
-                <div className="space-y-3 pt-2 border-t">
-                  <h3 className="font-medium">Daily Check-in</h3>
+
+              {participation.status === 'completed' ? (
+                <div className="bg-green-50 p-4 rounded-lg text-center">
+                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                  <p className="font-medium text-green-800">Challenge Completed!</p>
+                  <p className="text-sm text-green-700">Congratulations on your achievement!</p>
+                  <div className="mt-3 flex items-center justify-center gap-2">
+                    <Award className="h-5 w-5 text-yellow-600" />
+                    <span className="font-medium text-yellow-700">+{challenge.points_reward || 100} points earned</span>
+                  </div>
+                </div>
+              ) : todayCheckedIn ? (
+                <div className="bg-green-50 p-4 rounded-lg text-center">
+                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                  <p className="font-medium text-green-800">Already checked in today!</p>
+                  <p className="text-sm text-green-700">Great job staying consistent!</p>
+                  <p className="text-xs text-green-600 mt-2">
+                    Last check-in: {format(new Date(participation.last_check_in || ''), 'MMM d, yyyy h:mm a')}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3 pt-2">
+                  <Separator />
+                  <h3 className="font-medium flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    Daily Check-in
+                  </h3>
                   <Textarea
                     placeholder="How did today go? Any notes or reflections..."
                     value={checkInNote}
@@ -307,29 +338,13 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
                   </Button>
                 </div>
               )}
-              
-              {todayCheckedIn && (
-                <div className="bg-green-50 p-4 rounded-lg text-center">
-                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                  <p className="font-medium text-green-800">Already checked in today!</p>
-                  <p className="text-sm text-green-700">Great job staying consistent!</p>
-                </div>
-              )}
-              
-              {participation.status === 'completed' && (
-                <div className="bg-green-50 p-4 rounded-lg text-center">
-                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                  <p className="font-medium text-green-800">Challenge Completed!</p>
-                  <p className="text-sm text-green-700">Congratulations on your achievement!</p>
-                </div>
-              )}
             </div>
           )}
-          <div className="flex justify-end">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setShowProgressModal(false)}>
               Close
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

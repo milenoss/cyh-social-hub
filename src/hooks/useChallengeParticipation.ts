@@ -40,6 +40,7 @@ export function useChallengeParticipation(challengeId?: string) {
   const joinChallenge = async () => {
     if (!user || !challengeId) return false;
 
+    const now = new Date().toISOString();
     try {
       const { data, error } = await supabase
         .from('challenge_participants')
@@ -47,8 +48,9 @@ export function useChallengeParticipation(challengeId?: string) {
           challenge_id: challengeId,
           user_id: user.id,
           status: 'active',
-          progress: 0,
-          started_at: new Date().toISOString()
+          progress: 0, 
+          started_at: now,
+          last_check_in: null
         })
         .select()
         .single();
@@ -125,6 +127,13 @@ export function useChallengeParticipation(challengeId?: string) {
       if (error) throw error;
 
       setParticipation(data);
+
+      // Update user profile stats if completed
+      if (updates.status === 'completed') {
+        await supabase.rpc('update_user_stats_on_completion', {
+          challenge_points: challenge.points_reward || 100
+        });
+      }
       
       if (progress >= 100) {
         toast({
