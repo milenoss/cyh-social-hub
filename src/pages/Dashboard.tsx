@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigation } from "@/components/Navigation";
 import { FriendRequestsNotification } from "@/components/FriendRequestsNotification";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import { 
   Trophy, 
   Target, 
@@ -22,6 +23,7 @@ import {
   Award,
   Flame
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useProfile } from "@/hooks/useProfile";
 import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
@@ -34,6 +36,7 @@ import { ProgressTracker } from "@/components/ProgressTracker";
 import { ProfileManagement } from "@/components/ProfileManagement";
 import { AchievementSystem } from "@/components/AchievementSystem";
 import { useChallenges } from "@/hooks/useChallenges";
+import { AccountDeletionDialog } from "@/components/AccountDeletionDialog";
 import { AccountDeletionFlow } from "@/components/AccountDeletionFlow";
 import { AccountDeletionFlow } from "@/components/AccountDeletionFlow";
 import { Link } from "react-router-dom";
@@ -67,6 +70,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
+  const { toast } = useToast();
   const { 
     profile, 
     updateProfile
@@ -496,7 +500,7 @@ export default function Dashboard() {
                   
                   <TabsContent value="delete">
                     <AccountDeletionFlow />
-                  </TabsContent>
+                <TabsTrigger value="profile">Profile</TabsTrigger>
                 </Tabs>
               </TabsContent>
               
@@ -556,13 +560,35 @@ export default function Dashboard() {
                           </div>
                         </CardContent>
                       </Card>
-                    </div>
-                  </TabsContent>
-                  
+                    currentStreak: stats.currentStreak || 0,
+                    longestStreak: stats.longestStreak || 0,
+                    totalPoints: stats.totalPoints || 0,
                   <TabsContent value="delete">
                     <AccountDeletionFlow />
                   </TabsContent>
                 </Tabs>
+              </TabsContent>
+              
+              <TabsContent value="security">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Account Security</CardTitle>
+                    <CardDescription>
+                      Manage your account security settings
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Security settings would go here */}
+                  </CardContent>
+                  <Separator />
+                  <CardFooter className="flex flex-col items-start pt-6">
+                    <h3 className="text-lg font-semibold text-destructive mb-2">Danger Zone</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Once you delete your account, there is no going back. Please be certain.
+                    </p>
+                    <AccountDeletionDialog />
+                  </CardFooter>
+                </Card>
               </TabsContent>
             </Tabs>
           </TabsContent>
