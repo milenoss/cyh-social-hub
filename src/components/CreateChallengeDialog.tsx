@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/label"; 
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -30,7 +30,7 @@ const difficulties: { value: DifficultyLevel; label: string; description: string
 
 export function CreateChallengeDialog({ onCreateChallenge, trigger }: CreateChallengeDialogProps) {
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
+  const { user } = useAuth(); 
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -96,13 +96,21 @@ export function CreateChallengeDialog({ onCreateChallenge, trigger }: CreateChal
 
   const handleOpenChange = (newOpen: boolean) => {
     // Check if user is verified before allowing to open the dialog
-    if (newOpen && user && !user.email_confirmed_at) {
-      toast({
-        title: "Email verification required",
-        description: "Please verify your email address to create challenges.",
-        variant: "destructive",
-      });
-      return;
+    if (newOpen) {
+      if (!user) {
+        // Redirect to auth page if not logged in
+        window.location.href = '/auth';
+        return;
+      }
+      
+      if (user && !user.email_confirmed_at) {
+        toast({
+          title: "Email verification required",
+          description: "Please verify your email address to create challenges.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
     setOpen(newOpen);
   };
@@ -111,8 +119,8 @@ export function CreateChallengeDialog({ onCreateChallenge, trigger }: CreateChal
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="hero" size="lg">
-            <Plus className="h-5 w-5" />
+          <Button variant="hero" size="lg" className="mx-auto">
+            <Plus className="h-5 w-5 mr-2" />
             Create Challenge
           </Button>
         )}

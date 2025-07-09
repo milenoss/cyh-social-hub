@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { ChallengeCard } from "./ChallengeCard";
 import { ChallengeDetailsModal } from "./ChallengeDetailsModal";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Filter, Search, Plus } from "lucide-react";
-import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { CreateChallengeDialog } from "./CreateChallengeDialog";
 import { useChallenges } from "@/hooks/useChallenges";
@@ -86,13 +86,19 @@ export function ChallengeGrid() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Choose Your Challenge
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
             Every challenge is an opportunity to grow. Pick the one that scares and excites you the most.
           </p>
           {user && (
-            <div className="mt-6">
-              <CreateChallengeDialog onCreateChallenge={createChallenge} />
-            </div>
+            <CreateChallengeDialog 
+              onCreateChallenge={createChallenge}
+              trigger={
+                <Button variant="hero" size="lg">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Challenge
+                </Button>
+              }
+            />
           )}
         </div>
 
@@ -186,31 +192,21 @@ export function ChallengeGrid() {
             <div className="flex justify-center gap-4">
               {challenges.length > 0 && (
                 <Button variant="outline" onClick={() => {
-                  setSearchTerm("");
-                  setSelectedCategory("All");
-                  setSelectedDifficulty("All");
+                    setSearchTerm("");
+                    setSelectedCategory("All");
+                    setSelectedDifficulty("All");
                 }}>
                   Clear Filters
                 </Button>
               )}
-              {user ? (
-                <CreateChallengeDialog 
-                  onCreateChallenge={createChallenge}
-                  trigger={
-                    <Button variant="hero">
-                      <Plus className="h-4 w-4" />
-                      {challenges.length === 0 ? "Create First Challenge" : "Create Challenge"}
-                    </Button>
-                  }
-                />
-              ) : (
-                <Button variant="hero" asChild>
-                  <Link to="/auth">
-                    <Plus className="h-4 w-4" />
-                    {challenges.length === 0 ? "Sign In to Create Challenge" : "Sign In to Create"}
-                  </Link>
-                </Button>
-              )}
+                {!user && (
+                  <Button variant="hero" asChild>
+                    <Link to="/auth">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Sign In to Create Challenge
+                    </Link>
+                  </Button>
+                )}
             </div>
           </div>
         )}
