@@ -65,8 +65,6 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
   const [activeTab, setActiveTab] = useState("overview");
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [isJoining, setIsJoining] = useState(false);
 
   if (!challenge) return null;
 
@@ -84,6 +82,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
     await joinChallenge();
     setIsJoining(false);
     setShowJoinModal(false);
+  };
 
   const completedParticipants = mockParticipants.filter(p => p.status === 'completed').length;
   const activeParticipants = mockParticipants.filter(p => p.status === 'active').length;
@@ -203,8 +202,6 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                     <Target className="h-5 w-5 mr-2" />
                     {participationLoading ? "Loading..." : "Start Challenge"}
                   </Button>
-                )}
-              </div>
                 )}
               </div>
             </div>
@@ -425,61 +422,6 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
           </Tabs>
         </div>
       </DialogContent>
-      
-      {/* Join Challenge Modal */}
-      <Dialog open={showJoinModal} onOpenChange={setShowJoinModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Start Challenge</DialogTitle>
-            <DialogDescription>
-              Are you ready to begin this challenge?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <h3 className="font-medium">{challenge.title}</h3>
-              <p className="text-sm text-muted-foreground">{challenge.description}</p>
-            </div>
-            <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>{challenge.duration_days} days</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Badge className={`${difficultyColors[challenge.difficulty]} text-white`}>
-                  {difficultyLabels[challenge.difficulty]}
-                </Badge>
-              </div>
-            </div>
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <p className="text-sm font-medium mb-2">What to expect:</p>
-              <ul className="text-sm space-y-1 list-disc pl-5">
-                <li>Daily check-ins to track your progress</li>
-                <li>Complete the challenge in {challenge.duration_days} days</li>
-                <li>Earn {challenge.points_reward || 100} points upon completion</li>
-              </ul>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowJoinModal(false)}>
-              Cancel
-            </Button>
-            <Button onClick={confirmJoin} disabled={isJoining}>
-              {isJoining ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  Starting...
-                </>
-              ) : (
-                <>
-                  <Target className="h-4 w-4 mr-2" />
-                  Start Challenge
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       
       {/* Join Challenge Modal */}
       <Dialog open={showJoinModal} onOpenChange={setShowJoinModal}>
