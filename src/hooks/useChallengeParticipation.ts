@@ -134,52 +134,56 @@ export function useChallengeParticipation(challengeId?: string) {
   };
 
   const updateProgress = async (progress: number, note?: string) => {
-    if (!user || !challengeId || !participation) return false;
+    if (!user || !challengeId) return false;
 
-    const now = new Date().toISOString();
     try {
-      const updates: any = { 
-        progress,
-        last_check_in: now
-      };
-      
-      if (progress >= 100) {
-        updates.status = 'completed';
-        updates.completed_at = now;
-      }
-
-      const { data, error } = await supabase
-        .from('challenge_participants')
-        .update(updates)
-        .eq('id', participation.id)
-        .select()
-        .single();
+      // Use the check_in_challenge function
+      const { data, error } = await supabase.rpc('check_in_challenge', {
+        challenge_id_param: challengeId,
+        note_text: note || null
+      });
 
       if (error) throw error;
 
-      setParticipation(data);
+      if (data.success) {
+        // Update local state with the returned participation data
+        setParticipation(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            progress: data.participation.progress,
+            status: data.participation.status,
+            last_check_in: data.participation.last_check_in,
+            check_in_streak: data.participation.check_in_streak
+          };
+        });
 
-      // Update user profile stats if completed
-      if (updates.status === 'completed') {
-        const pointsReward = challenge?.points_reward || 100;
-        await supabase.rpc('update_user_stats_on_completion', {
-          challenge_points: challenge.points_reward || 100
-        });
-      }
-      
-      if (progress >= 100) {
-        toast({
-          title: "🎉 Challenge Completed!",
-          description: "Congratulations on completing this challenge!",
-        });
+        // Show appropriate toast message
+        if (data.participation.progress >= 100) {
+          toast({
+            title: "🎉 Challenge Completed!",
+            description: "Congratulations on completing this challenge!",
+          });
+        } else {
+          toast({
+            title: "Check-in Successful",
+            description: `Progress updated to ${data.participation.progress}%`,
+          });
+        }
+
+        return true;
       } else {
-        toast({
-          title: "Progress Updated",
-          description: `Progress updated to ${progress}%`,
-        });
+        // Handle already checked in case
+        if (data.message === "Already checked in today") {
+          toast({
+            title: "Already Checked In",
+            description: "You've already checked in today for this challenge.",
+          });
+          return false;
+        }
+        
+        throw new Error(data.message || "Failed to update progress");
       }
-
-      return true;
     } catch (error: any) {
       toast({
         title: "Error",
@@ -187,6 +191,32 @@ export function useChallengeParticipation(challengeId?: string) {
         variant: "destructive",
       });
       return false;
+    }
+  };
+
+  const getChallengeHistory = async () => {
+    if (!user || !challengeId) return null;
+
+    try {
+      const { data, error } = await supabase.rpc('get_challenge_history', {
+        challenge_id_param: challengeId
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        return data;
+      } else {
+        throw new Error(data.message || "Failed to get challenge history");
+      }
+    } catch (error: any) {
+      console.error('Error getting challenge history:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to get challenge history",
+        variant: "destructive",
+      });
+      return null;
     }
   };
 
@@ -201,6 +231,7 @@ export function useChallengeParticipation(challengeId?: string) {
     joinChallenge,
     leaveChallenge,
     updateProgress,
+    getChallengeHistory,
     refetch: fetchParticipation
   };
 }
