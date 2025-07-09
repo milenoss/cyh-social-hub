@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
 import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle, Calendar, Award } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,11 +14,6 @@ import { useState } from "react";
 import { format, differenceInDays } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { InviteFriendsDialog } from "./InviteFriendsDialog";
-import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
-import { format, differenceInDays } from "date-fns";
-import { Separator } from "@/components/ui/separator";
 
 interface ChallengeCardProps {
   challenge: ChallengeWithCreator;
@@ -51,34 +45,12 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [checkInNote, setCheckInNote] = useState("");
   const [isCheckingIn, setIsCheckingIn] = useState(false);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [showProgressModal, setShowProgressModal] = useState(false);
-  const [checkInNote, setCheckInNote] = useState("");
-  const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   const handleJoin = () => {
     if (hasJoined) {
       setShowProgressModal(true);
       return;
     }
-    setShowJoinModal(true);
-  };
-
-  const confirmJoin = async () => {
-    const success = await joinChallenge();
-    if (success) {
-      setShowJoinModal(false);
-      setShowProgressModal(true);
-    }
-  };
-
-  const handleCheckIn = async () => {
-    if (!participation) return;
-    
-    setIsCheckingIn(true);
-    const newProgress = Math.min(participation.progress + (100 / challenge.duration_days), 100);
-    await updateProgress(newProgress, checkInNote);
-    setCheckInNote("");
     setShowJoinModal(true);
   };
 
@@ -114,14 +86,6 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
     // Prevent card click when clicking on action buttons
     e.stopPropagation();
   };
-
-  const todayCheckedIn = participation?.last_check_in ? 
-    new Date(participation.last_check_in).toDateString() === new Date().toDateString() : false;
-
-  // Calculate days remaining
-  const daysRemaining = participation?.started_at ? 
-    Math.max(0, challenge.duration_days - differenceInDays(new Date(), new Date(participation.started_at))) : 
-    challenge.duration_days;
 
   const todayCheckedIn = participation?.last_check_in ? 
     new Date(participation.last_check_in).toDateString() === new Date().toDateString() : false;
