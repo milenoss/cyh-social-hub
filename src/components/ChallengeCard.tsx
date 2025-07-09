@@ -3,12 +3,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle } from "lucide-react";
+import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle, RefreshCw, Award } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChallengeWithCreator } from "@/lib/supabase-types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
-import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { format, differenceInDays, addDays } from "date-fns";
@@ -49,6 +48,12 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
   const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   const handleJoin = () => {
+    if (!user) {
+      // Redirect to auth page
+      window.location.href = '/auth';
+      return;
+    }
+    
     if (hasJoined) {
       setShowProgressModal(true);
       return;
@@ -117,28 +122,30 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
             <Badge variant="secondary" className="text-xs">
               {challenge.category}
             </Badge>
-            <Badge className={`${difficultyColors[challenge.difficulty]} text-white`}>
-              {difficultyLabels[challenge.difficulty]}
-            </Badge>
-            {isOwner && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={handleCardClick}>
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={(e) => { handleCardClick(e); handleEdit(); }}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => { handleCardClick(e); handleDelete(); }} className="text-destructive">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <div className="flex items-center gap-2">
+              <Badge className={`${difficultyColors[challenge.difficulty]} text-white`}>
+                {difficultyLabels[challenge.difficulty]}
+              </Badge>
+              {isOwner && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={handleCardClick}>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={(e) => { handleCardClick(e); handleEdit(); }}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => { handleCardClick(e); handleDelete(); }} className="text-destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
           <CardTitle className="text-lg leading-tight group-hover:text-primary transition-colors">
             {challenge.title}
@@ -190,17 +197,11 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
               variant="challenge" 
               onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.location.href = '/dashboard?tab=created';
-              }}>
-              onClick={(e) => {
                 e.preventDefault(); // Prevent default action
                 e.stopPropagation(); // Stop event propagation
                 handleJoin();
               }}
               disabled={loading}
-              className="w-full"
             >
               <Target className="h-4 w-4 mr-2" />
               {loading ? "Loading..." : "Start Challenge"}
@@ -211,37 +212,35 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               <div className="text-sm text-green-600 font-medium mb-1">
                 <Button 
                   variant="link" 
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setShowProgressModal(true);
                   }}>
                   ✓ View Progress
                 </Button>
               </div>
-            <Target className="h-4 w-4 mr-2" />
-            {loading ? "Joining..." : "Start Challenge"}
-              </div>
+              <Progress value={participation?.progress || 0} className="h-2 w-full max-w-[150px] mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">
+                Progress: {participation?.progress || 0}%
+              </p>
             </div>
           )}
           {isOwner && (
-            <div className="flex flex-col items-center gap-1">
-              <div className="text-sm text-green-600 font-medium">
-                <CheckCircle className="h-4 w-4 inline-block mr-1" />
-                Challenge Started
-              </div>
-              <Progress value={participation?.progress || 0} className="h-2 w-full max-w-[150px] mx-auto mb-1" />
-              <Button 
-                variant="link" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  window.location.href = '/dashboard?tab=active';
-                }}
-                className="text-xs p-0 h-auto"
-              >
-                View Progress
-                Manage Challenge
-              </Button>
-            </div>
+            <Button 
+              variant="link" 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = '/dashboard?tab=created';
+              }}
+              className="w-full text-muted-foreground hover:text-primary"
+            >
+              Manage Challenge
+            </Button>
+          )}
+        </CardFooter>
+      </Card>
 
       {/* Join Challenge Modal */}
       <Dialog open={showJoinModal} onOpenChange={setShowJoinModal}>
@@ -317,7 +316,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Clock className="h-4 w-4 text-muted-foreground" />
                   <span>Started: {format(new Date(participation.started_at || ''), 'MMM d, yyyy')}</span>
                 </div>
                 <Badge variant={participation.status === 'completed' ? 'default' : 'secondary'}>
