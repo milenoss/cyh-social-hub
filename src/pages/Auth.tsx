@@ -9,10 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Target, ArrowLeft, Mail, Lock } from "lucide-react";
-import { GoogleLoginButton } from "@/components/GoogleLoginButton";
-import { SupabaseDebug } from "@/components/SupabaseDebug";
-import { OAuthDebugger } from "@/components/OAuthDebugger";
+import { Target, ArrowLeft, Mail, Lock, User } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Auth() {
@@ -175,48 +172,6 @@ export default function Auth() {
                       {loading ? "Signing in..." : "Sign In"}
                     </Button>
                   </form>
-                  
-                  {/* Social Login Options */}
-                  <div className="mt-6 mb-2">
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t"></span>
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">
-                          Or continue with
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <GoogleLoginButton 
-                        redirectTo={`${window.location.origin}/dashboard`}
-                        fullWidth
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-center text-muted-foreground">
-                    We only support Google and email login for now
-                  </p>
-                  
-                  {/* Debug component - remove in production */}
-                  {import.meta.env.DEV && (
-                    <div className="mt-6">
-                      <Tabs defaultValue="connection">
-                        <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="connection">Connection</TabsTrigger>
-                          <TabsTrigger value="oauth">OAuth</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="connection">
-                          <SupabaseDebug />
-                        </TabsContent>
-                        <TabsContent value="oauth">
-                          <OAuthDebugger />
-                        </TabsContent>
-                      </Tabs>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -282,30 +237,6 @@ export default function Auth() {
                       {loading ? "Creating account..." : "Create Account"}
                     </Button>
                   </form>
-                  
-                  {/* Social Login Options */}
-                  <div className="mt-6 mb-2">
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t"></span>
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">
-                          Or continue with
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <GoogleLoginButton 
-                        redirectTo={`${window.location.origin}/dashboard`}
-                        fullWidth
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-center text-muted-foreground">
-                    We only support Google and email login for now
-                  </p>
                 </CardContent>
               </Card>
             </TabsContent>

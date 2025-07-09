@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigation } from "@/components/Navigation";
-import { FriendRequestsNotification } from "@/components/FriendRequestsNotification";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -11,22 +10,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Trophy, 
   Target, 
-  Calendar, 
-  TrendingUp, 
-  Users, 
+  Calendar,
   Clock,
-  CheckCircle,
-  XCircle,
   Play,
-  Settings,
   Award,
   Flame
 } from "lucide-react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useProfile } from "@/hooks/useProfile";
 import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
-import { FriendSystem } from "@/components/FriendSystem";
-import { FriendSuggestions } from "@/components/FriendSuggestions";
 import { ChallengeCard } from "@/components/ChallengeCard";
 import { CreateChallengeDialog } from "@/components/CreateChallengeDialog";
 import { EditChallengeModal } from "@/components/EditChallengeModal";
@@ -249,9 +241,8 @@ export default function Dashboard() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="active">Active Challenges</TabsTrigger>
-            <TabsTrigger value="friends">Friends</TabsTrigger>
             <TabsTrigger value="created">Created</TabsTrigger>
             <TabsTrigger value="profile">Settings</TabsTrigger>
           </TabsList>
@@ -336,11 +327,6 @@ export default function Dashboard() {
                   ))}
               </div>
             )}
-          </TabsContent>
-
-          {/* Friends Tab */}
-          <TabsContent value="friends">
-            <FriendSystem />
           </TabsContent>
 
           {/* Created Challenges */}
