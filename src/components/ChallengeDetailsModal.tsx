@@ -96,7 +96,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
               <div className="flex items-center gap-3">
                 <Badge variant="secondary" className="text-xs">
                   {challenge.category}
-                  onClick={() => handleJoin()}
+                </Badge>
                 <Badge 
                   className={`${difficultyColors[challenge.difficulty]} text-white text-xs`}
                 >
