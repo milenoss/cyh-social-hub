@@ -29,12 +29,15 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
       });
       
       if (error) throw error;
-    } catch (error) {
+      
+      // The user will be redirected to the OAuth provider if successful
+      console.log("OAuth sign-in initiated", data);
+    } catch (error: any) {
       console.error(`Error signing in with ${provider}:`, error);
-      setError(`Failed to sign in with ${provider}. ${(error as Error).message}`);
+      setError(`Failed to sign in with ${provider}. ${error.message}`);
       toast({
         title: "Login Error",
-        description: (error as Error).message || `Failed to sign in with ${provider}`,
+        description: error.message || `Failed to sign in with ${provider}`,
         variant: "destructive",
       });
     } finally {
@@ -43,6 +46,7 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
       if (error) {
         setIsLoading(null);
       }
+    }
   };
 
   return (
@@ -59,7 +63,7 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
       </div>
       
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -67,9 +71,9 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
       
       <Button 
         variant="outline" 
-        className="w-full"
+        className="w-full" 
         onClick={() => handleSocialLogin('google')}
-        disabled={isLoading === 'google'}
+        disabled={!!isLoading}
       >
         {isLoading === 'google' ? (
           <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -93,7 +97,8 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
             />
           </svg>
         )}
-        Continue with Google
-      </Button>      
+        Google
+      </Button>
+    </div>
   );
 }
