@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -24,7 +24,6 @@ import {
   CheckCircle,
   Play, 
   Pause,
-  RefreshCw,
   RefreshCw
 } from "lucide-react";
 import { ChallengeWithCreator } from "@/lib/supabase-types";
@@ -76,6 +75,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
 
   const handleJoin = () => {
     if (!user) {
+      // Redirect to auth page
       window.location.href = '/auth';
       return;
     }
@@ -488,7 +488,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
             <Button variant="outline" onClick={() => setJoinDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={confirmJoin} disabled={joining}>
+            <Button onClick={confirmJoin} disabled={joining} variant="hero">
               {joining ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin mr-2" />
