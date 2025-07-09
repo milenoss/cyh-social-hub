@@ -143,6 +143,8 @@ export function useChallengeParticipation(challengeId?: string) {
 
       setParticipation(null);
       toast({
+      }
+      )
 
       return true;
     } catch (error: any) {
@@ -175,6 +177,10 @@ export function useChallengeParticipation(challengeId?: string) {
             ...prev,
             progress: data.participation.progress,
             status: data.participation.status,
+          }
+        }
+        )
+      }
       if (data.success) {
         // Update local state with the returned participation data
         setParticipation(prev => {
@@ -222,6 +228,9 @@ export function useChallengeParticipation(challengeId?: string) {
         if (data.message === "Already checked in today") {
           toast({
             title: "Already Checked In",
+          }
+          )
+        }
         // Handle already checked in case
         if (data.message === "Already checked in today") {
           toast({
@@ -233,7 +242,7 @@ export function useChallengeParticipation(challengeId?: string) {
         
         throw new Error(data.message || "Failed to update progress");
         
-    } catch (error: any) {
+          } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to update progress",
@@ -241,7 +250,8 @@ export function useChallengeParticipation(challengeId?: string) {
       });
       return false;
     }
-  };
+      };
+  }
 
   const getChallengeHistory = async () => {
     if (!user || !challengeId) return null;
