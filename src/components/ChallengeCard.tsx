@@ -60,6 +60,8 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
     if (hasJoined) {
       setShowProgressModal(true);
       return;
+    }
+    setShowJoinModal(true);
   };
 
   const confirmJoin = async () => {
@@ -136,53 +138,30 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
           <div className="flex items-start justify-between mb-2">
             <Badge variant="secondary" className="text-xs">
               {challenge.category}
-                {difficultyLabels[challenge.difficulty]}
-              </Badge>
-              {isOwner && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={handleCardClick}>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={(e) => { handleCardClick(e); handleEdit(); }}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => { handleCardClick(e); handleDelete(); }} className="text-destructive">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
+            </Badge>
+            <Badge className={`${difficultyColors[challenge.difficulty]} text-white`}>
+              {difficultyLabels[challenge.difficulty]}
+            </Badge>
+            {isOwner && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={handleCardClick}>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={(e) => { handleCardClick(e); handleEdit(); }}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => { handleCardClick(e); handleDelete(); }} className="text-destructive">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
-          <CardTitle className="text-lg leading-tight group-hover:text-primary transition-colors">
-            {challenge.title}
-          </CardTitle>
-          {challenge.creator && (
-            <p className="text-xs text-muted-foreground">
-              by {challenge.creator.display_name || challenge.creator.username || 'Anonymous'}
-            </p>
-          )}
-        </CardHeader>
-        
-        <CardContent className="pb-4">
-          <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
-            {challenge.description}
-          </p>
-          
-          <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              <span>{challenge.duration_days} days</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className="h-3 w-3" />
-            <div className="flex items-center gap-2">
-              <Badge 
           <CardTitle className="text-lg leading-tight group-hover:text-primary transition-colors">
             {challenge.title}
           </CardTitle>
@@ -208,10 +187,6 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               <span>{challenge.participant_count || 0} joined</span>
             </div>
           </div>
-        <CardFooter className="pt-0">
-          {!isOwner && !hasJoined && (
-            <Button 
-              className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
           
           <div className="flex flex-wrap gap-1">
             {challenge.tags?.slice(0, 3).map((tag) => (
@@ -414,132 +389,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowProgressModal(false)}>
               Close
-              {loading ? "Joining..." : "Start Challenge"}
-              <div className="text-sm text-green-600 font-medium mb-1">
-                <Button 
-                  variant="link" 
-                  onClick={(e) => {
-                    handleCardClick(e);
-                    setShowProgressModal(true);
-                  }}>
-                  ✓ View Progress
-                </Button>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Progress: {participation?.progress || 0}%
-              </div>
-            </div>
-          )}
-          {isOwner && (
-            <div className="w-full text-center text-sm text-muted-foreground">
-              <Button 
-                variant="link" 
-                className="text-muted-foreground hover:text-primary"
-                onClick={() => window.location.href = '/dashboard?tab=created'}>
-                Manage Challenge
-              </Button>
-            </div>
-          )}
-        </CardFooter>
-      </Card>
-
-      {/* Join Challenge Modal */}
-      <Dialog open={showJoinModal} onOpenChange={setShowJoinModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Join Challenge</DialogTitle>
-            <DialogDescription>
-              Are you ready to accept this challenge?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <h3 className="font-medium">{challenge.title}</h3>
-              <p className="text-sm text-muted-foreground">{challenge.description}</p>
-            </div>
-            <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>{challenge.duration_days} days</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Badge className={`${difficultyColors[challenge.difficulty]} text-white`}>
-                  {difficultyLabels[challenge.difficulty]}
-                </Badge>
-              </div>
-            </div>
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <p className="text-sm font-medium mb-2">What to expect:</p>
-              <ul className="text-sm space-y-1 list-disc pl-5">
-                <li>Daily check-ins to track your progress</li>
-                <li>Complete the challenge in {challenge.duration_days} days</li>
-                <li>Earn {challenge.points_reward || 100} points upon completion</li>
-              </ul>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowJoinModal(false)}>
-              Cancel
             </Button>
-            <Button onClick={confirmJoin} disabled={loading}>
-              {loading ? "Joining..." : "Accept Challenge"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Progress Modal */}
-      <Dialog open={showProgressModal} onOpenChange={setShowProgressModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Challenge Progress</DialogTitle>
-            <DialogDescription>
-              Track your progress for {challenge.title}
-            </DialogDescription>
-          </DialogHeader>
-          {participation && (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Overall Progress</span>
-                  <span>{participation.progress}%</span>
-                </div>
-                <Progress value={participation.progress} className="h-2.5" />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Day {Math.max(1, challenge.duration_days - daysRemaining)} of {challenge.duration_days}</span>
-                  <span>{daysRemaining} days remaining</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>Started: {format(new Date(participation.started_at || ''), 'MMM d, yyyy')}</span>
-                </div>
-                <Badge variant={participation.status === 'completed' ? 'default' : 'secondary'}>
-                  {participation.status}
-                </Badge>
-              </div>
-
-              {participation.status === 'completed' ? (
-                <div className="bg-green-50 p-4 rounded-lg text-center">
-                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                  <p className="font-medium text-green-800">Challenge Completed!</p>
-                  <p className="text-sm text-green-700">Congratulations on your achievement!</p>
-                  <div className="mt-3 flex items-center justify-center gap-2">
-                    <Award className="h-5 w-5 text-yellow-600" />
-                    <span className="font-medium text-yellow-700">+{challenge.points_reward || 100} points earned</span>
-                  </div>
-                </div>
-              ) : todayCheckedIn ? (
-                <div className="bg-green-50 p-4 rounded-lg text-center">
-                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                  <p className="font-medium text-green-800">Already checked in today!</p>
-                  <p className="text-sm text-green-700">Great job staying consistent!</p>
-                  <p className="text-xs text-green-600 mt-2">
-                    Last check-in: {format(new Date(participation.last_check_in || ''), 'MMM d, yyyy h:mm a')}
-                  </p>
-                </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
