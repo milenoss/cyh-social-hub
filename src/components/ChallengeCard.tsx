@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle, Calendar, Award } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChallengeWithCreator } from "@/lib/supabase-types";
@@ -10,9 +10,10 @@ import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import { format, differenceInDays } from "date-fns";
+import { format, differenceInDays, addDays } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { InviteFriendsDialog } from "./InviteFriendsDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChallengeCardProps {
   challenge: ChallengeWithCreator;
@@ -38,6 +39,7 @@ const difficultyLabels: Record<string, string> = {
 export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: ChallengeCardProps) {
   const { user } = useAuth();
   const { participation, joinChallenge, updateProgress, loading } = useChallengeParticipation(challenge.id);
+  const { toast } = useToast();
   const isOwner = user?.id === challenge.created_by;
   const hasJoined = !!participation;
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -56,6 +58,10 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
   const confirmJoin = async () => {
     const success = await joinChallenge();
     if (success) {
+      toast({
+        title: "Challenge Started!",
+        description: "You've successfully joined the challenge. Check in daily to track your progress.",
+      });
       setShowJoinModal(false);
       setShowProgressModal(true);
     }
@@ -64,8 +70,11 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
   const handleCheckIn = async () => {
     if (!participation) return;
     
+    // Calculate the new progress based on challenge duration
+    const progressIncrement = Math.min(100 / challenge.duration_days, 100);
+    const newProgress = Math.min(participation.progress + progressIncrement, 100);
+    
     setIsCheckingIn(true);
-    const newProgress = Math.min(participation.progress + (100 / challenge.duration_days), 100);
     await updateProgress(newProgress, checkInNote);
     setCheckInNote("");
     setIsCheckingIn(false);
@@ -93,6 +102,11 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
   const daysRemaining = participation?.started_at ? 
     Math.max(0, challenge.duration_days - differenceInDays(new Date(), new Date(participation.started_at))) : 
     challenge.duration_days;
+    
+  // Calculate expected end date
+  const endDate = participation?.started_at ? 
+    addDays(new Date(participation.started_at), challenge.duration_days) : 
+    null;
 
   return (
     <>
@@ -175,8 +189,8 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
               variant="challenge" 
               onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+                e.preventDefault(); // Prevent default action
+                e.stopPropagation(); // Stop event propagation
                 handleJoin();
               }}
               disabled={loading}
@@ -220,7 +234,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
           <DialogHeader>
             <DialogTitle>Join Challenge</DialogTitle>
             <DialogDescription>
-              Are you ready to accept this challenge?
+              Are you ready to start this challenge?
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -252,8 +266,9 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
             <Button variant="outline" onClick={() => setShowJoinModal(false)}>
               Cancel
             </Button>
-            <Button onClick={confirmJoin} disabled={loading}>
-              {loading ? "Joining..." : "Accept Challenge"}
+            <Button onClick={confirmJoin} disabled={loading} variant="hero">
+              <Target className="h-4 w-4 mr-2" />
+              {loading ? "Starting..." : "Start Challenge"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -279,6 +294,9 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Day {Math.max(1, challenge.duration_days - daysRemaining)} of {challenge.duration_days}</span>
                   <span>{daysRemaining} days remaining</span>
+                  {endDate && (
+                    <span>Ends: {format(endDate, 'MMM d, yyyy')}</span>
+                  )}
                 </div>
               </div>
               
@@ -315,7 +333,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
                 <div className="space-y-3 pt-2">
                   <Separator />
                   <h3 className="font-medium flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
+                    <CheckCircle className="h-4 w-4 text-green-600" />
                     Daily Check-in
                   </h3>
                   <Textarea
@@ -329,7 +347,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
                     className="w-full" 
                     disabled={isCheckingIn}
                   >
-                    <CheckCircle className="h-4 w-4 mr-2" />
+                    <CheckCircle className="h-4 w-4 mr-2" /> 
                     {isCheckingIn ? "Checking in..." : "Check In for Today"}
                   </Button>
                 </div>

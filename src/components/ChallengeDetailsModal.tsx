@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -63,8 +63,8 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
   const { user } = useAuth();
   const { participation, joinChallenge, leaveChallenge, loading: participationLoading } = useChallengeParticipation(challenge?.id);
   const [activeTab, setActiveTab] = useState("overview");
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [isJoining, setIsJoining] = useState(false);
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [joining, setJoining] = useState(false);
 
   if (!challenge) return null;
 
@@ -72,16 +72,32 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
   const hasJoined = !!participation;
 
   const handleJoin = () => {
-    setShowJoinModal(true);
+    if (!user) {
+      window.location.href = '/auth';
+      return;
+    }
+    setJoinDialogOpen(true);
   };
 
   const confirmJoin = async () => {
-    if (!user) return window.location.href = '/auth';
+    if (!user || !challenge) return;
 
-    setIsJoining(true);
-    await joinChallenge();
-    setIsJoining(false);
-    setShowJoinModal(false);
+    setJoining(true);
+    const success = await joinChallenge();
+    setJoining(false);
+    
+    if (success) {
+      setJoinDialogOpen(false);
+      toast({
+        title: "Challenge Started!",
+        description: "You've successfully joined the challenge. Check in daily to track your progress.",
+      });
+      
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        window.location.href = '/dashboard?tab=active';
+      }, 1500);
+    }
   };
 
   const completedParticipants = mockParticipants.filter(p => p.status === 'completed').length;
@@ -184,7 +200,11 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                   <Button 
                     size="lg" 
                     variant="outline" 
-                    onClick={() => window.location.href = '/dashboard?tab=active'}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.location.href = '/dashboard?tab=active';
+                    }}
                     disabled={participationLoading}
                     className="min-w-[200px]"
                   >
@@ -195,7 +215,11 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                   <Button 
                     size="lg" 
                     variant="hero" 
-                    onClick={handleJoin}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleJoin();
+                    }}
                     disabled={participationLoading}
                     className="min-w-[200px]"
                   >
@@ -424,10 +448,10 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
       </DialogContent>
       
       {/* Join Challenge Modal */}
-      <Dialog open={showJoinModal} onOpenChange={setShowJoinModal}>
+      <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Start Challenge</DialogTitle>
+            <DialogTitle>Start Challenge: {challenge.title}</DialogTitle>
             <DialogDescription>
               Are you ready to begin this challenge?
             </DialogDescription>
@@ -458,11 +482,11 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowJoinModal(false)}>
+            <Button variant="outline" onClick={() => setJoinDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={confirmJoin} disabled={isJoining}>
-              {isJoining ? (
+            <Button onClick={confirmJoin} disabled={joining}>
+              {joining ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin mr-2" />
                   Starting...
