@@ -2,21 +2,32 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+// Get environment variables
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.error("Missing Supabase environment variables. Please check your .env file.");
+  console.log("Current environment:", import.meta.env.MODE);
 }
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+export const supabase = createClient<Database>(
+  SUPABASE_URL || "",
+  SUPABASE_ANON_KEY || "",
+  {
   auth: {
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-    debug: import.meta.env.DEV
+    debug: true // Enable debug mode to see auth-related logs
   }
 });
+
+// Log Supabase initialization for debugging
+if (import.meta.env.DEV) {
+  console.log("Supabase client initialized with URL:", SUPABASE_URL ? `${SUPABASE_URL.substring(0, 15)}...` : "Not set");
+  console.log("Auth debug mode:", true);
+}

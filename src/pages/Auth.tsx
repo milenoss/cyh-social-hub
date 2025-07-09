@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Target, ArrowLeft, Mail, Lock } from "lucide-react";
-import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+import { GoogleLoginButton } from "@/components/GoogleLoginButton";
 import { SupabaseDebug } from "@/components/SupabaseDebug";
 import { OAuthDebugger } from "@/components/OAuthDebugger";
 import { Link } from "react-router-dom";
@@ -178,7 +178,23 @@ export default function Auth() {
                   
                   {/* Social Login Options */}
                   <div className="mt-6 mb-2">
-                    <SocialLoginButtons redirectTo="/dashboard" />
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t"></span>
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                          Or continue with
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <GoogleLoginButton 
+                        redirectTo={`${window.location.origin}/dashboard`}
+                        fullWidth
+                      />
+                    </div>
                   </div>
                   <p className="text-xs text-center text-muted-foreground">
                     We only support Google and email login for now
@@ -269,7 +285,23 @@ export default function Auth() {
                   
                   {/* Social Login Options */}
                   <div className="mt-6 mb-2">
-                    <SocialLoginButtons redirectTo="/dashboard" />
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t"></span>
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                          Or continue with
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <GoogleLoginButton 
+                        redirectTo={`${window.location.origin}/dashboard`}
+                        fullWidth
+                      />
+                    </div>
                   </div>
                   <p className="text-xs text-center text-muted-foreground">
                     We only support Google and email login for now
