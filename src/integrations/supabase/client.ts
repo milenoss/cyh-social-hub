@@ -20,7 +20,7 @@ export const supabase = createClient<Database>(
     auth: {
       storage: localStorage,
       persistSession: true,
-      autoRefreshToken: true,
-    },
+      autoRefreshToken: true
+    }
   }
 );
