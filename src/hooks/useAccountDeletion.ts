@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from './use-toast';
 
 export function useAccountDeletion() {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -15,7 +15,7 @@ export function useAccountDeletion() {
     try {
       // Call the RPC function to request account deletion
       const { data, error } = await supabase.rpc('request_account_deletion', {
-        reason
+        reason: reason || null
       });
 
       if (error) throw error;
@@ -52,7 +52,7 @@ export function useAccountDeletion() {
       // Call the RPC function to cancel account deletion
       const { data, error } = await supabase.rpc('cancel_account_deletion', {
         request_id: requestId,
-        reason
+        reason: reason || null
       });
 
       if (error) throw error;
@@ -80,13 +80,13 @@ export function useAccountDeletion() {
     try {
       const { data, error } = await supabase
         .from('account_deletion_requests')
-        .select('*')
+        .select('id, status, reason, requested_at, cancellation_reason, data_retention_period')
         .eq('user_id', user.id)
         .order('requested_at', { ascending: false });
 
       if (error) throw error;
 
-      return data || [];
+      return data as any[] || [];
     } catch (error: any) {
       console.error('Error fetching deletion requests:', error);
       toast({
