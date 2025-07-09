@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Target, ArrowLeft, Mail, Lock } from "lucide-react";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+import { SupabaseDebug } from "@/components/SupabaseDebug";
 import { Link } from "react-router-dom";
 
 export default function Auth() {
@@ -181,6 +182,13 @@ export default function Auth() {
                   <p className="text-xs text-center text-muted-foreground">
                     We only support Google and email login for now
                   </p>
+                  
+                  {/* Debug component - remove in production */}
+                  {import.meta.env.DEV && (
+                    <div className="mt-6">
+                      <SupabaseDebug />
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
