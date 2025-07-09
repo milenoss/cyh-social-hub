@@ -3,6 +3,7 @@ import { Database } from '@/integrations/supabase/types';
 export type Challenge = Database['public']['Tables']['challenges']['Row'];
 export type ChallengeInsert = Database['public']['Tables']['challenges']['Insert'];
 export type ChallengeUpdate = Database['public']['Tables']['challenges']['Update'];
+  last_check_in?: string | null;
 
 export type ChallengeParticipant = Database['public']['Tables']['challenge_participants']['Row'];
 export type ChallengeParticipantInsert = Database['public']['Tables']['challenge_participants']['Insert'];

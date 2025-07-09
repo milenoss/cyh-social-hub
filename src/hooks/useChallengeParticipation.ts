@@ -103,12 +103,16 @@ export function useChallengeParticipation(challengeId?: string) {
   const updateProgress = async (progress: number, note?: string) => {
     if (!user || !challengeId || !participation) return false;
 
+    const now = new Date().toISOString();
     try {
-      const updates: any = { progress };
+      const updates: any = { 
+        progress,
+        last_check_in: now
+      };
       
       if (progress >= 100) {
         updates.status = 'completed';
-        updates.completed_at = new Date().toISOString();
+        updates.completed_at = now;
       }
 
       const { data, error } = await supabase
