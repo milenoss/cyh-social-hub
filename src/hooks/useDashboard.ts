@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
-import { ChallengeWithCreator, Profile, ChallengeParticipant } from '@/lib/supabase-types';
+import { ChallengeWithCreator, Profile, ChallengeParticipant, ChallengeParticipationWithChallenge } from '@/lib/supabase-types';
 import { useToast } from '@/hooks/use-toast';
 
 interface DashboardStats {
@@ -11,10 +11,6 @@ interface DashboardStats {
   currentStreak: number;
   longestStreak: number;
   totalPoints: number;
-}
-
-interface ChallengeParticipationWithChallenge extends ChallengeParticipant {
-  challenge: ChallengeWithCreator;
 }
 
 export function useDashboard() {

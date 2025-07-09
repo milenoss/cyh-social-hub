@@ -16,5 +16,9 @@ export interface ChallengeWithCreator extends Challenge {
   user_participation?: ChallengeParticipant;
 }
 
+export interface ChallengeParticipationWithChallenge extends ChallengeParticipant {
+  challenge: ChallengeWithCreator;
+}
+
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'extreme';
 export type ParticipationStatus = 'active' | 'completed' | 'abandoned';

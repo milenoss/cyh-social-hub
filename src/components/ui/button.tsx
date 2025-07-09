@@ -19,13 +19,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         hero: "bg-gradient-motivation text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 font-semibold",
-        challenge: "bg-card border-2 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary",
-        difficulty: {
-          easy: "bg-difficulty-easy text-white hover:bg-difficulty-easy/80",
-          medium: "bg-difficulty-medium text-white hover:bg-difficulty-medium/80", 
-          hard: "bg-difficulty-hard text-white hover:bg-difficulty-hard/80",
-          extreme: "bg-difficulty-extreme text-white hover:bg-difficulty-extreme/80"
-        }
+        challenge: "bg-card border-2 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary"
       },
       size: {
         default: "h-10 px-4 py-2",
