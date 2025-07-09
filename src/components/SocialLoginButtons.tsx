@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Mail, AlertCircle } from "lucide-react";
+import { Mail, AlertCircle, Github } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
