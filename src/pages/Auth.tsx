@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Target, ArrowLeft, Mail, Github, Lock } from "lucide-react";
+import { Target, ArrowLeft, Mail, Lock } from "lucide-react";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { Link } from "react-router-dom";
 
@@ -175,9 +175,12 @@ export default function Auth() {
                   </form>
                   
                   {/* Social Login Options */}
-                  <div className="mt-6">
+                  <div className="mt-6 mb-2">
                     <SocialLoginButtons redirectTo="/dashboard" />
                   </div>
+                  <p className="text-xs text-center text-muted-foreground">
+                    We only support Google and email login for now
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -245,9 +248,12 @@ export default function Auth() {
                   </form>
                   
                   {/* Social Login Options */}
-                  <div className="mt-6">
+                  <div className="mt-6 mb-2">
                     <SocialLoginButtons redirectTo="/dashboard" />
                   </div>
+                  <p className="text-xs text-center text-muted-foreground">
+                    We only support Google and email login for now
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
