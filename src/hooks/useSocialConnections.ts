@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from './use-toast';
 
 interface SocialConnection {
   id: string;
@@ -28,13 +28,13 @@ export function useSocialConnections() {
     setIsLoading(true);
     try {
       // Call the RPC function to get social connections
-      const { data, error } = await supabase.rpc('get_social_connections');
+      const { data, error } = await supabase.from('social_connections')
+        .select('*')
+        .eq('user_id', user?.id || '');
 
       if (error) throw error;
 
-      if (data && data.success) {
-        setConnections(data.connections || []);
-      }
+      setConnections(data || []);
     } catch (error: any) {
       console.error('Error fetching social connections:', error);
       toast({
@@ -52,9 +52,10 @@ export function useSocialConnections() {
 
     try {
       // Call the RPC function to disconnect social account
-      const { data, error } = await supabase.rpc('disconnect_social_account', {
-        provider
-      });
+      const { error } = await supabase.from('social_connections')
+        .delete()
+        .eq('user_id', user?.id || '')
+        .eq('provider', provider);
 
       if (error) throw error;
 

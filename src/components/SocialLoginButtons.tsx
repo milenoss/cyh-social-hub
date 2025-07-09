@@ -5,6 +5,9 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+// For debugging
+const DEBUG_OAUTH = true;
+
 interface SocialLoginButtonsProps {
   redirectTo?: string;
 }
@@ -17,13 +20,20 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
   const handleSocialLogin = async (provider: 'google') => {
     setIsLoading(provider);
     setError(null);
+    
+    // Log for debugging
+    if (DEBUG_OAUTH) {
+      console.log(`Initiating ${provider} login with redirectTo:`, redirectTo || `${window.location.origin}/dashboard`);
+    }
+    
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: redirectTo || `${window.location.origin}/dashboard`,
           queryParams: {
-            prompt: 'consent'
+            prompt: 'consent',
+            access_type: 'offline'
           }
         }
       });
@@ -36,8 +46,8 @@ export function SocialLoginButtons({ redirectTo }: SocialLoginButtonsProps) {
       console.error(`Error signing in with ${provider}:`, error);
       setError(`Failed to sign in with ${provider}. ${error.message}`);
       toast({
-        title: "Login Error",
-        description: error.message || `Failed to sign in with ${provider}`,
+        title: "OAuth Error",
+        description: `${error.message || `Failed to sign in with ${provider}`}. Check console for details.`,
         variant: "destructive",
       });
     } finally {

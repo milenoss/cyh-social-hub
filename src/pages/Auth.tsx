@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Target, ArrowLeft, Mail, Lock } from "lucide-react";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { SupabaseDebug } from "@/components/SupabaseDebug";
+import { OAuthDebugger } from "@/components/OAuthDebugger";
 import { Link } from "react-router-dom";
 
 export default function Auth() {
@@ -186,7 +187,18 @@ export default function Auth() {
                   {/* Debug component - remove in production */}
                   {import.meta.env.DEV && (
                     <div className="mt-6">
-                      <SupabaseDebug />
+                      <Tabs defaultValue="connection">
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="connection">Connection</TabsTrigger>
+                          <TabsTrigger value="oauth">OAuth</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="connection">
+                          <SupabaseDebug />
+                        </TabsContent>
+                        <TabsContent value="oauth">
+                          <OAuthDebugger />
+                        </TabsContent>
+                      </Tabs>
                     </div>
                   )}
                 </CardContent>
