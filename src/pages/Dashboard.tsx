@@ -35,9 +35,12 @@ import { ProfileManagement } from "@/components/ProfileManagement";
 import { AchievementSystem } from "@/components/AchievementSystem";
 import { useChallenges } from "@/hooks/useChallenges";
 import { AccountDeletionFlow } from "@/components/AccountDeletionFlow";
+import { AccountDeletionFlow } from "@/components/AccountDeletionFlow";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { EmailVerificationGuard } from "@/components/EmailVerificationGuard";
@@ -61,6 +64,7 @@ const checkForSocialLoginRedirect = () => {
 
 export default function Dashboard() {
   const { user, loading: authLoading, refreshSession } = useAuth();
+  const { toast } = useToast();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const { 
@@ -432,18 +436,68 @@ export default function Dashboard() {
           </TabsContent>
 
           {/* Profile Tab */}
-          <TabsContent value="profile">
-            <Tabs defaultValue="profile" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="profile">Profile Settings</TabsTrigger>
-                <TabsTrigger value="achievements">Achievements & Security</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="profile">
-                <ProfileManagement 
-                  profile={profile}
-                  onUpdateProfile={updateProfile}
-                />
+                <Tabs defaultValue="achievements" className="space-y-6">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="achievements">Achievements</TabsTrigger>
+                    <TabsTrigger value="security">Security</TabsTrigger>
+                    <TabsTrigger value="delete">Delete Account</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="achievements">
+                    <AchievementSystem 
+                      userId={user.id}
+                      userStats={{
+                        challengesCompleted: stats.challengesCompleted,
+                        challengesCreated: userChallenges.length,
+                        currentStreak: stats.currentStreak,
+                        longestStreak: stats.longestStreak,
+                        totalPoints: stats.totalPoints,
+                        friendsHelped: 3, // Mock data
+                        commentsPosted: 12 // Mock data
+                      }}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="security">
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Security Settings</CardTitle>
+                          <CardDescription>
+                            Manage your account security and privacy
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                            <h3 className="text-lg font-medium">Two-Factor Authentication</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Add an extra layer of security to your account by enabling two-factor authentication.
+                            </p>
+                            <Button variant="outline">
+                              Setup 2FA (Coming Soon)
+                            </Button>
+                          </div>
+                          
+                          <Separator />
+                          
+                          <div className="space-y-2">
+                            <h3 className="text-lg font-medium">Password</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Change your password or reset it if you've forgotten it.
+                            </p>
+                            <Button variant="outline" asChild>
+                              <Link to="/auth/reset-password">Change Password</Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="delete">
+                    <AccountDeletionFlow />
+                  </TabsContent>
+                </Tabs>
               </TabsContent>
               
               <TabsContent value="achievements">
