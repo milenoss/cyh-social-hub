@@ -174,14 +174,15 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
             <Button 
               className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
               variant="challenge" 
-              onClick={(e) => { 
-                handleCardClick(e); 
-                handleJoin(); 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleJoin();
               }}
               disabled={loading}
             >
               <Target className="h-4 w-4 mr-2" />
-              {loading ? "Joining..." : "Start Challenge"}
+              {loading ? "Loading..." : "Start Challenge"}
             </Button>
           )}
           {!isOwner && hasJoined && (
@@ -189,8 +190,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               <div className="text-sm text-green-600 font-medium mb-1">
                 <Button 
                   variant="link" 
-                  onClick={(e) => {
-                    handleCardClick(e);
+                  onClick={() => {
                     setShowProgressModal(true);
                   }}>
                   ✓ View Progress
