@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle, Calendar, Award } from "lucide-react";
+import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChallengeWithCreator } from "@/lib/supabase-types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,7 +42,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
   const { participation, joinChallenge, updateProgress, loading } = useChallengeParticipation(challenge.id);
   const { toast } = useToast();
   const isOwner = user?.id === challenge.created_by;
-  const hasJoined = !!participation;
+  const hasJoined = !!participation; 
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [checkInNote, setCheckInNote] = useState("");
@@ -189,11 +190,17 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
               variant="challenge" 
               onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = '/dashboard?tab=created';
+              }}>
+              onClick={(e) => {
                 e.preventDefault(); // Prevent default action
                 e.stopPropagation(); // Stop event propagation
                 handleJoin();
               }}
               disabled={loading}
+              className="w-full"
             >
               <Target className="h-4 w-4 mr-2" />
               {loading ? "Loading..." : "Start Challenge"}
@@ -210,23 +217,31 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
                   ✓ View Progress
                 </Button>
               </div>
-              <div className="text-xs text-muted-foreground">
-                Progress: {participation?.progress || 0}%
+            <Target className="h-4 w-4 mr-2" />
+            {loading ? "Joining..." : "Start Challenge"}
               </div>
             </div>
           )}
           {isOwner && (
-            <div className="w-full text-center text-sm text-muted-foreground">
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-sm text-green-600 font-medium">
+                <CheckCircle className="h-4 w-4 inline-block mr-1" />
+                Challenge Started
+              </div>
+              <Progress value={participation?.progress || 0} className="h-2 w-full max-w-[150px] mx-auto mb-1" />
               <Button 
                 variant="link" 
-                className="text-muted-foreground hover:text-primary"
-                onClick={() => window.location.href = '/dashboard?tab=created'}>
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.location.href = '/dashboard?tab=active';
+                }}
+                className="text-xs p-0 h-auto"
+              >
+                View Progress
                 Manage Challenge
               </Button>
             </div>
-          )}
-        </CardFooter>
-      </Card>
 
       {/* Join Challenge Modal */}
       <Dialog open={showJoinModal} onOpenChange={setShowJoinModal}>

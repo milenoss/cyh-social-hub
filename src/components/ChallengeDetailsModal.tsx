@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -14,7 +14,7 @@ import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
 import { 
   Users, 
   Clock, 
-  Target, 
+  Target,
   Calendar,
   Award,
   TrendingUp, 
@@ -22,12 +22,14 @@ import {
   Share2,
   Flag,
   CheckCircle,
-  Play,
+  Play, 
   Pause,
+  RefreshCw
   RefreshCw
 } from "lucide-react";
 import { ChallengeWithCreator } from "@/lib/supabase-types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 interface ChallengeDetailsModalProps {
@@ -61,8 +63,11 @@ const mockParticipants = [
 
 export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }: ChallengeDetailsModalProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const { participation, joinChallenge, leaveChallenge, loading: participationLoading } = useChallengeParticipation(challenge?.id);
   const [activeTab, setActiveTab] = useState("overview");
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [joining, setJoining] = useState(false);
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [joining, setJoining] = useState(false);
 
@@ -72,10 +77,18 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
   const hasJoined = !!participation;
 
   const handleJoin = () => {
-    if (!user) {
       window.location.href = '/auth';
       return;
     }
+    setJoinDialogOpen(true);
+  };
+
+  const confirmJoin = async () => {
+    if (!user || !challenge) return;
+
+    setJoining(true);
+    const success = await joinChallenge();
+    setJoining(false);
     setJoinDialogOpen(true);
   };
 
@@ -90,6 +103,13 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
       setJoinDialogOpen(false);
       toast({
         title: "Challenge Started!",
+        description: "You've successfully joined the challenge. Check in daily to track your progress.",
+      });
+      
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        window.location.href = '/dashboard?tab=active';
+      }, 1500);
         description: "You've successfully joined the challenge. Check in daily to track your progress.",
       });
       
@@ -218,6 +238,16 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
+                      handleJoin();
+                    }}
+                    disabled={participationLoading}
+                    className="min-w-[200px]"
+                  >
+                    <Target className="h-5 w-5 mr-2" />
+                    {participationLoading ? "Loading..." : "Start Challenge"}
+                  </Button>
+                )}
+              </div>
                       handleJoin();
                     }}
                     disabled={participationLoading}
@@ -446,6 +476,61 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
           </Tabs>
         </div>
       </DialogContent>
+      
+      {/* Join Challenge Modal */}
+      <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Start Challenge: {challenge.title}</DialogTitle>
+            <DialogDescription>
+              Are you ready to begin this challenge?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <h3 className="font-medium">{challenge.title}</h3>
+              <p className="text-sm text-muted-foreground">{challenge.description}</p>
+            </div>
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span>{challenge.duration_days} days</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Badge className={`${difficultyColors[challenge.difficulty]} text-white`}>
+                  {difficultyLabels[challenge.difficulty]}
+                </Badge>
+              </div>
+            </div>
+            <div className="bg-muted/50 p-4 rounded-lg">
+              <p className="text-sm font-medium mb-2">What to expect:</p>
+              <ul className="text-sm space-y-1 list-disc pl-5">
+                <li>Daily check-ins to track your progress</li>
+                <li>Complete the challenge in {challenge.duration_days} days</li>
+                <li>Earn {challenge.points_reward || 100} points upon completion</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setJoinDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmJoin} disabled={joining}>
+              {joining ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                  Starting...
+                </>
+              ) : (
+                <>
+                  <Target className="h-4 w-4 mr-2" />
+                  Start Challenge
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Join Challenge Modal */}
       <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
