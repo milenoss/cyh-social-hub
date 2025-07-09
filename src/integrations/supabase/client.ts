@@ -24,17 +24,14 @@ export const supabase = createClient<Database>(
   SUPABASE_URL || "",
   SUPABASE_ANON_KEY || "",
   {
-  SUPABASE_URL || "",
-  SUPABASE_ANON_KEY || "",
-  {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-    debug: true // Enable debug mode to see auth-related logs
-    debug: true // Enable debug mode to see auth-related logs
+    auth: {
+      storage: localStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+      debug: true // Enable debug mode to see auth-related logs
+    }
   }
-});
+);
 
 // Log Supabase initialization for debugging
 if (import.meta.env.DEV) {
