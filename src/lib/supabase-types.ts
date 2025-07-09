@@ -4,7 +4,11 @@ export type Challenge = Database['public']['Tables']['challenges']['Row'];
 export type ChallengeInsert = Database['public']['Tables']['challenges']['Insert'];
 export type ChallengeUpdate = Database['public']['Tables']['challenges']['Update'];
   last_check_in?: string | null;
-
+export interface ChallengeParticipant extends Database['public']['Tables']['challenge_participants']['Row'] {
+  last_check_in?: string | null;
+  check_in_streak?: number;
+  check_in_notes?: any[];
+}
 export interface ChallengeParticipant extends Database['public']['Tables']['challenge_participants']['Row'] {
   last_check_in?: string | null;
 }
