@@ -186,7 +186,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               disabled={loading}
             >
               <Target className="h-4 w-4 mr-2" />
-              {loading ? "Joining..." : "Accept Challenge"}
+              {loading ? "Joining..." : "Start Challenge"}
             </Button>
           )}
           {!isOwner && hasJoined && (
