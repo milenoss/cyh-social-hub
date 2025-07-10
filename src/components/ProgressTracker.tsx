@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress"; 
+import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,17 +10,18 @@ import {
   CheckCircle, 
   Calendar as CalendarIcon, 
   Target, 
-  TrendingUp,
+  TrendingUp, 
   MessageSquare,
   Plus,
-  Flame
+  Flame,
+  Award
 } from "lucide-react";
 import { format } from "date-fns";
 
 interface ProgressEntry {
   id: string;
   date: string;
-  completed: boolean;
+  completed: boolean; 
   note?: string;
   progress_percentage: number;
 }
@@ -57,6 +58,7 @@ export function ProgressTracker({
   const [showCalendar, setShowCalendar] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [todayCheckedIn, setTodayCheckedIn] = useState(false);
+  const [checkInNotes, setCheckInNotes] = useState<any[]>([]);
 
   // Check if user has already checked in today
   useEffect(() => {
@@ -70,6 +72,19 @@ export function ProgressTracker({
       );
     } else {
       setTodayCheckedIn(false);
+    }
+    
+    // Load check-in notes if available
+    if (participation?.check_in_notes) {
+      try {
+        const notes = Array.isArray(participation.check_in_notes) 
+          ? participation.check_in_notes 
+          : JSON.parse(participation.check_in_notes);
+        setCheckInNotes(notes);
+      } catch (e) {
+        console.error("Error parsing check-in notes:", e);
+        setCheckInNotes([]);
+      }
     }
   }, [participation]);
 
@@ -85,6 +100,7 @@ export function ProgressTracker({
     if (success) {
       setNote("");
       // Add new entry to local state
+      const newProgress = Math.min(currentProgress + (100 / duration), 100);
       const newEntry: ProgressEntry = {
         id: Date.now().toString(),
         date: format(new Date(), 'yyyy-MM-dd'),
@@ -92,7 +108,16 @@ export function ProgressTracker({
         note: note || undefined,
         progress_percentage: newProgress
       };
+      
+      // Add note to check-in notes
+      if (note) {
+        setCheckInNotes(prev => [
+          { date: new Date().toISOString(), note },
+          ...prev
+        ]);
+      }
       setEntries(prev => [newEntry, ...prev]);
+      setTodayCheckedIn(true);
     }
     
     setUpdating(false);
@@ -101,6 +126,12 @@ export function ProgressTracker({
   const todayEntry = entries.find(entry => 
     entry.date === format(new Date(), 'yyyy-MM-dd')
   );
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, 'MMM d, yyyy h:mm a');
+  };
 
   return (
     <div className="space-y-6">
@@ -132,6 +163,37 @@ export function ProgressTracker({
           </div>
 
           <div className="space-y-2">
+          {checkInNotes.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  Check-in Notes
+                </CardTitle>
+                <CardDescription>
+                  Your daily reflections and notes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-60 overflow-y-auto">
+                  {checkInNotes.map((note, index) => (
+                    <div key={index} className="p-3 bg-muted/50 rounded-lg">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(note.date)}
+                        </span>
+                        <Badge variant="outline" size="sm" className="text-xs">
+                          Day {index + 1}
+                        </Badge>
+                      </div>
+                      <p className="text-sm">{note.note}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
             <div className="flex justify-between text-sm">
               <span>Overall Progress</span>
               <span>{Math.round(progressPercentage)}%</span>
@@ -162,12 +224,14 @@ export function ProgressTracker({
               <p className="font-medium text-green-600">Already checked in today!</p>
               <p className="text-sm text-muted-foreground mt-2">
                 Last check-in: {format(new Date(participation?.last_check_in || new Date()), 'MMM d, yyyy h:mm a')}
+                {participation?.status === 'completed' && <span className="ml-2">• Challenge completed!</span>}
               </p>
               {participation?.status === 'completed' && (
                 <div className="mt-3 flex items-center justify-center gap-2">
                   <Award className="h-5 w-5 text-yellow-600" />
                   <span className="font-medium text-yellow-700">Challenge completed!</span>
                 </div>
+                <span>Ends: {format(endDate, 'MMM d, yyyy')}</span>
               )}
             </div>
           ) : (
@@ -234,7 +298,7 @@ export function ProgressTracker({
                 <div key={entry.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                   <div className="mt-1">
                     {entry.completed ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <CheckCircle className="h-5 w-5 text-green-600" /> 
                     ) : (
                       <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
                     )}
@@ -247,7 +311,7 @@ export function ProgressTracker({
                       <Badge 
                         variant={entry.completed ? "default" : "secondary"}
                         className="text-xs"
-                      >
+                      > 
                         {entry.completed ? "Completed" : "Missed"}
                       </Badge>
                     </div>
