@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Target, User, Trophy, Users, LogOut } from "lucide-react";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,6 +57,13 @@ export function Navigation() {
             <Link to="/explore?tab=leaderboards" className="text-muted-foreground hover:text-primary transition-colors">
               Leaderboards
             </Link>
+            <FeedbackForm 
+              trigger={
+                <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">
+                  Feedback
+                </span>
+              }
+            />
           </div>
 
           {/* User Actions */}

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChallengeGrid } from "@/components/ChallengeGrid";
 import { ChallengeFeed } from "@/components/ChallengeFeed";
 import { Leaderboards } from "@/components/Leaderboards";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { 
   Search, 
@@ -38,9 +39,12 @@ export default function Explore() {
           <h1 className="text-4xl font-bold mb-4">
             Explore Challenges
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
             Discover new challenges, track community activity, and see how you stack up against others
           </p>
+          <div className="flex justify-center">
+            <FeedbackForm />
+          </div>
         </div>
 
         {/* Main Tabs */}

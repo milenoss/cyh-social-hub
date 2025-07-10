@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -263,6 +264,17 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
               >
                 <Flag className="h-4 w-4" />
                 Report
+              </Button>
+              <FeedbackForm 
+                challengeId={challenge.id}
+                challengeTitle={challenge.title}
+                trigger={
+                  <Button variant="outline" size="sm">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Feedback
+                  </Button>
+                }
+              />
               </Button>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { 
   Trophy, 
   Target, 
@@ -245,7 +246,7 @@ export default function Dashboard() {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="active">Active Challenges</TabsTrigger>
             <TabsTrigger value="created">Created</TabsTrigger>
-            <TabsTrigger value="invitations">Invitations</TabsTrigger>
+            <TabsTrigger value="invitations">Invitations</TabsTrigger> 
             <TabsTrigger value="profile">Settings</TabsTrigger>
           </TabsList>
 
@@ -255,10 +256,11 @@ export default function Dashboard() {
               <h2 className="text-2xl font-bold">Active Challenges</h2>
               <Link to="/">
                 <Button variant="outline">
-                  <Target className="h-4 w-4" />
+                  <Target className="h-4 w-4 mr-2" />
                   Browse More
                 </Button>
               </Link>
+              <FeedbackForm />
             </div>
 
             {participatedChallenges.filter(p => p.status === 'active').length === 0 ? (

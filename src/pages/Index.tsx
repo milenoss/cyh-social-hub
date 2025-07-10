@@ -1,6 +1,7 @@
 import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
 import { ChallengeGrid } from "@/components/ChallengeGrid";
+import { Footer } from "@/components/Footer";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -64,28 +65,7 @@ const Index = () => {
       </EmailVerificationGuard>
       
       {/* Footer */}
-      <footer className="bg-muted/50 py-12">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold mb-4">Ready to Choose Your Hard?</h3>
-            <p className="text-muted-foreground mb-6">
-              Join thousands of people who decided to make their struggles meaningful. 
-              The path won't be easy, but it will be worth it.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-              <span>Free Forever</span>
-              <span>•</span>
-              <span>Community Driven</span>
-              <span>•</span>
-              <span>Your Growth Matters</span>
-            </div>
-            <div className="mt-6 flex justify-center gap-4">
-              <Link to="/auth" className="text-primary hover:underline">Sign In</Link>
-              <Link to="/explore" className="text-primary hover:underline">Explore Challenges</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
