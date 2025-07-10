@@ -15,7 +15,8 @@ import {
   Clock,
   Play,
   Award,
-  Flame
+  Flame,
+  CheckCircle
 } from "lucide-react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useProfile } from "@/hooks/useProfile";
