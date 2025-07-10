@@ -4,6 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ChallengeWithCreator, Challenge, ChallengeInsert, ChallengeUpdate } from '@/lib/supabase-types';
 import { useToast } from '@/hooks/use-toast';
 
+interface ChallengeStats {
+  participant_count: number;
+  completed_count: number;
+  active_count: number;
+  average_progress: number;
+}
+
 export function useChallenges() {
   const [challenges, setChallenges] = useState<ChallengeWithCreator[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,28 +21,63 @@ export function useChallenges() {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
-        .from('challenges')
-        .select(`
-          *,
-          creator:profiles!challenges_created_by_fkey(
-            id,
-            username,
-            display_name,
-            avatar_url
-          ),
-          challenge_participants(count)
-        `)
-        .eq('is_public', true)
-        .order('created_at', { ascending: false });
+      // Try to get challenges with real-time stats
+      let data, error;
+      
+      try {
+        // First try to get challenges with real participant stats
+        const result = await supabase.rpc('get_challenges_with_stats');
+        data = result.data;
+        error = result.error;
+      } catch (rpcError) {
+        console.warn('RPC function not available, falling back to basic query');
+        
+        // Fallback to basic query
+        const result = await supabase
+          .from('challenges')
+          .select(`
+            *,
+            creator:profiles!challenges_created_by_fkey(
+              id,
+              username,
+              display_name,
+              avatar_url
+            ),
+            challenge_participants(count)
+          `)
+          .eq('is_public', true)
+          .order('created_at', { ascending: false });
+          
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) throw error;
 
       // Transform the data to include participant count
-      const transformedData = data?.map(challenge => ({
-        ...challenge,
-        participant_count: challenge.challenge_participants?.[0]?.count || 0
-      })) || [];
+      const transformedData = data?.map(challenge => {
+        // Check if we have the new stats format or the old format
+        if (challenge.stats) {
+          // New format with detailed stats
+          const stats = challenge.stats as ChallengeStats;
+          return {
+            ...challenge,
+            participant_count: stats.participant_count || 0,
+            completed_count: stats.completed_count || 0,
+            active_count: stats.active_count || 0,
+            average_progress: stats.average_progress || 0
+          };
+        } else {
+          // Old format with just participant count
+          return {
+            ...challenge,
+            participant_count: challenge.challenge_participants?.[0]?.count || 0,
+            completed_count: 0,
+            active_count: 0,
+            average_progress: 0
+          };
+        }
+      }) || [];
 
       setChallenges(transformedData);
     } catch (error: any) {
@@ -186,7 +228,47 @@ export function useChallenges() {
   };
 
   useEffect(() => {
+    // Initial fetch
     fetchChallenges();
+    
+    // Set up real-time subscription for challenge changes
+    const challengesSubscription = supabase
+      .channel('challenges-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'challenges'
+        },
+        (payload) => {
+          console.log('Challenge change received:', payload);
+          fetchChallenges(); // Refresh challenges when changes occur
+        }
+      )
+      .subscribe();
+      
+    // Set up real-time subscription for participant changes
+    const participantsSubscription = supabase
+      .channel('participants-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'challenge_participants'
+        },
+        (payload) => {
+          console.log('Participant change received:', payload);
+          fetchChallenges(); // Refresh challenges when participant changes occur
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(challengesSubscription);
+      supabase.removeChannel(participantsSubscription);
+    };
   }, []);
 
   return {

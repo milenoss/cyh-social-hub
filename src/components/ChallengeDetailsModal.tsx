@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChallengeComments } from "./ChallengeComments";
+import { RealParticipantsList } from "./RealParticipantsList";
 import { InviteFriendsDialog } from "./InviteFriendsDialog";
 import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
 import { 
@@ -57,12 +58,6 @@ const difficultyLabels: Record<string, string> = {
 };
 
 // Mock data for participants - in real app, this would come from the database
-const mockParticipants = [
-  { id: '1', username: 'challenger1', display_name: 'Alex Chen', avatar_url: null, progress: 85, status: 'active', joined_at: '2024-01-15' },
-  { id: '2', username: 'fitnessfan', display_name: 'Sarah Johnson', avatar_url: null, progress: 92, status: 'active', joined_at: '2024-01-14' },
-  { id: '3', username: 'mindful_mike', display_name: 'Mike Wilson', avatar_url: null, progress: 100, status: 'completed', joined_at: '2024-01-10' },
-  { id: '4', username: 'growth_guru', display_name: 'Emma Davis', avatar_url: null, progress: 67, status: 'active', joined_at: '2024-01-16' },
-];
 
 export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }: ChallengeDetailsModalProps) {
   const { user } = useAuth();
@@ -197,9 +192,6 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
       setReportSubmitting(false);
     }
   };
-
-  const completedParticipants = mockParticipants.filter(p => p.status === 'completed').length;
-  const activeParticipants = mockParticipants.filter(p => p.status === 'active').length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -410,7 +402,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
 
             <TabsContent value="participants" className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Participants ({challenge.participant_count || 0})</h3>
+                <h3 className="text-lg font-semibold">Participants</h3>
                 <div className="flex gap-2">
                   {hasJoined && (
                     <Badge variant="default" className="text-xs">
@@ -420,55 +412,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                 </div>
               </div>
 
-              <div className="space-y-3">
-                {mockParticipants.map((participant) => (
-                  <Card key={participant.id} className={participant.id === user?.id ? "border-primary/50 bg-primary/5" : ""}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={participant.avatar_url || ""} />
-                            <AvatarFallback>
-                              {participant.display_name[0] || participant.username[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{participant.display_name}</p>
-                            <p className="text-sm text-muted-foreground">@{participant.username}</p>
-                            {participant.id === user?.id && (
-                              <Badge variant="secondary" className="text-xs mt-1">You</Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge 
-                              variant={participant.status === 'completed' ? 'default' : 'secondary'}
-                              className="text-xs"
-                            >
-                              {participant.status === 'completed' ? (
-                                <>
-                                  <CheckCircle className="h-3 w-3 mr-1" />
-                                  Completed
-                                </>
-                              ) : (
-                                <>
-                                  <Play className="h-3 w-3 mr-1" />
-                                  Active
-                                </>
-                              )}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Progress value={participant.progress} className="w-20 h-2" />
-                            <span className="text-sm font-medium">{participant.progress}%</span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <RealParticipantsList challengeId={challenge.id} currentUserId={user?.id} />
             </TabsContent>
 
             <TabsContent value="progress" className="space-y-4">
@@ -476,18 +420,21 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                 <Card className="border-primary/50 bg-primary/5">
                   <CardHeader>
                     <CardTitle className="text-base">Your Progress</CardTitle>
+                    <CardDescription>
+                      Overall progress of all participants
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>Current Progress</span>
-                        <span>{participation.progress}%</span>
+                        <span>Average Progress</span>
+                        <span>{challenge.average_progress || 0}%</span>
                       </div>
                       <Progress value={participation.progress} />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Started: {new Date(participation.started_at!).toLocaleDateString()}</span>
                         <span>Status: {participation.status}</span>
-                      </div>
+                      <Progress value={challenge.average_progress || 0} />
                     </div>
                   </CardContent>
                 </Card>
@@ -530,36 +477,18 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
 
               <div>
                 <h3 className="text-lg font-semibold mb-3">Leaderboard</h3>
-                <div className="space-y-2">
-                  {mockParticipants
-                    .sort((a, b) => b.progress - a.progress)
-                    .map((participant, index) => (
-                      <div key={participant.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                        <div className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full text-sm font-bold">
-                          {index + 1}
-                        </div>
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={participant.avatar_url || ""} />
-                          <AvatarFallback className="text-xs">
-                            {participant.display_name[0] || participant.username[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">{participant.display_name}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Progress value={participant.progress} className="w-16 h-2" />
-                          <span className="text-sm font-medium w-12">{participant.progress}%</span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
+                <RealParticipantsList 
+                  challengeId={challenge.id} 
+                  currentUserId={user?.id} 
+                  showAsLeaderboard={true} 
+                  limit={10}
+                />
               </div>
             </TabsContent>
 
             <TabsContent value="discussion" className="space-y-4">
               <ChallengeComments 
-                challengeId={challenge.id} 
+                challengeId={challenge.id}
                 challengeOwnerId={challenge.created_by}
               />
             </TabsContent>

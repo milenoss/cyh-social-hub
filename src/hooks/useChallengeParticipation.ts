@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChallengeParticipant, ChallengeWithCreator } from '@/lib/supabase-types';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 
 export function useChallengeParticipation(challengeId?: string) {
   const [participation, setParticipation] = useState<ChallengeParticipant | null>(null);
@@ -325,6 +326,35 @@ export function useChallengeParticipation(challengeId?: string) {
       return null;
     }
   };
+
+  // Set up real-time subscription for participation changes
+  useEffect(() => {
+    if (!challengeId || !user) return;
+    
+    const participationSubscription = supabase
+      .channel(`participation-${challengeId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'challenge_participants',
+          filter: `challenge_id=eq.${challengeId}` 
+        },
+        (payload) => {
+          console.log('Participation change received:', payload);
+          // Only update if it's for the current user
+          if (payload.new && payload.new.user_id === user.id) {
+            fetchParticipation();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(participationSubscription);
+    };
+  }, [challengeId, user]);
 
   useEffect(() => {
     fetchParticipation();

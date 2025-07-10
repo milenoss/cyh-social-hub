@@ -18,6 +18,9 @@ export type Profile = Database['public']['Tables']['profiles']['Row'];
 export interface ChallengeWithCreator extends Challenge {
   creator?: Profile;
   participant_count?: number;
+  completed_count?: number;
+  active_count?: number;
+  average_progress?: number;
   user_participation?: ChallengeParticipant;
 }
 
@@ -27,3 +30,42 @@ export interface ChallengeParticipationWithChallenge extends ChallengeParticipan
 
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'extreme';
 export type ParticipationStatus = 'active' | 'completed' | 'abandoned';
+
+export interface ChallengeComment {
+  id: string;
+  challenge_id: string;
+  user_id: string;
+  parent_id?: string;
+  content: string;
+  is_pinned: boolean;
+  likes_count: number;
+  created_at: string;
+  updated_at: string;
+  user: {
+    id: string;
+    user_id: string;
+    username: string;
+    display_name: string;
+    avatar_url: string | null;
+  };
+  is_liked?: boolean;
+  replies?: ChallengeComment[];
+  can_edit?: boolean;
+  can_pin?: boolean;
+}
+
+export interface ChallengeActivity {
+  id: string;
+  challenge_id: string;
+  user_id: string;
+  activity_type: 'join' | 'progress' | 'complete' | 'comment' | 'like';
+  activity_data: any;
+  created_at: string;
+  user: {
+    id: string;
+    user_id: string;
+    username: string;
+    display_name: string;
+    avatar_url: string | null;
+  };
+}
