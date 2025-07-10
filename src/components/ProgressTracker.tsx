@@ -231,7 +231,6 @@ export function ProgressTracker({
                   <Award className="h-5 w-5 text-yellow-600" />
                   <span className="font-medium text-yellow-700">Challenge completed!</span>
                 </div>
-                <span>Ends: {format(endDate, 'MMM d, yyyy')}</span>
               )}
             </div>
           ) : (
