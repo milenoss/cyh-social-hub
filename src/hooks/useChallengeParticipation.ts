@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChallengeParticipant, ChallengeWithCreator } from '@/lib/supabase-types';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
 
 export function useChallengeParticipation(challengeId?: string) {
   const [participation, setParticipation] = useState<ChallengeParticipant | null>(null);
