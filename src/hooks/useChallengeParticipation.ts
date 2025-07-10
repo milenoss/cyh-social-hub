@@ -138,11 +138,85 @@ export function useChallengeParticipation(challengeId?: string) {
     if (!user || !challengeId) return false;
 
     try {
-      // Use the check_in_challenge function
-      const { data, error } = await supabase.rpc('check_in_challenge', {
-        challenge_id_param: challengeId,
-        note_text: note || null
-      });
+      // First check if the RPC function exists, if not use direct table update
+      let data, error;
+      
+      try {
+        // Try to use the RPC function first
+        const rpcResult = await supabase.rpc('check_in_challenge', {
+          challenge_id_param: challengeId,
+          note_text: note || null
+        });
+        data = rpcResult.data;
+        error = rpcResult.error;
+      } catch (rpcError: any) {
+        // If RPC function doesn't exist, fall back to manual implementation
+        if (rpcError.message?.includes('Could not find the function')) {
+          console.warn('RPC function not found, using fallback implementation');
+          
+          // Check if user already checked in today
+          const today = new Date().toISOString().split('T')[0];
+          const { data: existingParticipation } = await supabase
+            .from('challenge_participants')
+            .select('last_check_in, check_in_streak, progress, status')
+            .eq('challenge_id', challengeId)
+            .eq('user_id', user.id)
+            .single();
+          
+          if (existingParticipation?.last_check_in) {
+            const lastCheckIn = new Date(existingParticipation.last_check_in).toISOString().split('T')[0];
+            if (lastCheckIn === today) {
+              data = {
+                success: false,
+                message: "Already checked in today"
+              };
+              error = null;
+            }
+          }
+          
+          if (!data) {
+            // Calculate new progress and streak
+            const newProgress = Math.min((existingParticipation?.progress || 0) + (100 / 30), 100); // Assuming 30-day challenge
+            const newStreak = (existingParticipation?.check_in_streak || 0) + 1;
+            const newStatus = newProgress >= 100 ? 'completed' : 'active';
+            
+            // Update the participation record
+            const { data: updatedData, error: updateError } = await supabase
+              .from('challenge_participants')
+              .update({
+                progress: newProgress,
+                status: newStatus,
+                last_check_in: new Date().toISOString(),
+                check_in_streak: newStreak,
+                check_in_notes: note ? 
+                  supabase.rpc('array_append', { 
+                    arr: existingParticipation?.check_in_notes || [], 
+                    elem: { date: today, note } 
+                  }) : 
+                  existingParticipation?.check_in_notes || []
+              })
+              .eq('challenge_id', challengeId)
+              .eq('user_id', user.id)
+              .select()
+              .single();
+            
+            if (updateError) throw updateError;
+            
+            data = {
+              success: true,
+              participation: {
+                progress: newProgress,
+                status: newStatus,
+                last_check_in: new Date().toISOString(),
+                check_in_streak: newStreak
+              }
+            };
+            error = null;
+          }
+        } else {
+          throw rpcError;
+        }
+      }
 
       if (error) throw error;
 
@@ -186,6 +260,7 @@ export function useChallengeParticipation(challengeId?: string) {
         throw new Error(data.message || "Failed to update progress");
       }
     } catch (error: any) {
+      console.error('Progress update error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to update progress",
@@ -199,9 +274,39 @@ export function useChallengeParticipation(challengeId?: string) {
     if (!user || !challengeId) return null;
 
     try {
-      const { data, error } = await supabase.rpc('get_challenge_history', {
-        challenge_id_param: challengeId
-      });
+      // Try RPC function first, fall back to direct query if not available
+      let data, error;
+      
+      try {
+        const rpcResult = await supabase.rpc('get_challenge_history', {
+          challenge_id_param: challengeId
+        });
+        data = rpcResult.data;
+        error = rpcResult.error;
+      } catch (rpcError: any) {
+        if (rpcError.message?.includes('Could not find the function')) {
+          console.warn('get_challenge_history RPC function not found, using fallback');
+          
+          // Fallback: get participation data directly
+          const { data: participationData, error: participationError } = await supabase
+            .from('challenge_participants')
+            .select('*')
+            .eq('challenge_id', challengeId)
+            .eq('user_id', user.id)
+            .single();
+          
+          if (participationError) throw participationError;
+          
+          data = {
+            success: true,
+            participation: participationData,
+            history: participationData?.check_in_notes || []
+          };
+          error = null;
+        } else {
+          throw rpcError;
+        }
+      }
 
       if (error) throw error;
 
