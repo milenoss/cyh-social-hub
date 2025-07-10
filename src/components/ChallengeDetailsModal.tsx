@@ -34,7 +34,8 @@ import {
 import { ChallengeWithCreator } from "@/lib/supabase-types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ChallengeDetailsModalProps {
   challenge: ChallengeWithCreator | null;
@@ -51,13 +52,6 @@ const difficultyColors: Record<string, string> = {
 };
 
 const difficultyLabels: Record<string, string> = {
-  easy: "Easy",
-  medium: "Medium",
-  hard: "Hard", 
-  extreme: "Extreme"
-};
-
-// Mock data for participants - in real app, this would come from the database
 
 export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }: ChallengeDetailsModalProps) {
   const { user } = useAuth();
@@ -66,6 +60,13 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
   const [activeTab, setActiveTab] = useState("overview"); 
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
+  const [participantStats, setParticipantStats] = useState({
+    completedCount: 0,
+    activeCount: 0,
+    averageProgress: 0
+  });
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportSubmitting, setReportSubmitting] = useState(false);
@@ -75,6 +76,53 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
 
   const isOwner = user?.id === challenge.created_by;
   const hasJoined = !!participation;
+
+  const fetchParticipants = async () => {
+    if (!challenge?.id) return;
+    
+    setLoadingParticipants(true);
+    try {
+      const { data, error } = await supabase.rpc('get_real_challenge_participants', {
+        challenge_id_param: challenge.id
+      });
+
+      if (error) throw error;
+
+      if (data && data.success) {
+        setParticipants(data.participants || []);
+        
+        // Calculate stats
+        const completed = data.participants.filter((p: any) => p.status === 'completed').length;
+        const active = data.participants.filter((p: any) => p.status === 'active').length;
+        const avgProgress = data.participants.length > 0 
+          ? data.participants.reduce((acc: number, p: any) => acc + p.progress, 0) / data.participants.length 
+          : 0;
+        
+        setParticipantStats({
+          completedCount: completed,
+          activeCount: active,
+          averageProgress: Math.round(avgProgress)
+        });
+      } else {
+        console.error('Error in response:', data.message);
+      }
+    } catch (error: any) {
+      console.error('Error fetching participants:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load participants",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingParticipants(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open && challenge?.id && activeTab === "participants") {
+      fetchParticipants();
+    }
+  }, [open, challenge?.id, activeTab]);
 
   const handleJoin = () => {
     if (!user) {
@@ -190,9 +238,6 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
       });
     } finally {
       setReportSubmitting(false);
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -298,7 +343,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
             <Card>
               <CardContent className="p-4 text-center">
                 <CheckCircle className="h-5 w-5 text-green-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold">{challenge.completed_count || 0}</p>
+                <p className="text-2xl font-bold">{participantStats.completedCount}</p>
                 <p className="text-xs text-muted-foreground">Completed</p>
               </CardContent>
             </Card>
@@ -412,55 +457,99 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                 </div>
               </div>
 
-              <RealParticipantsList challengeId={challenge.id} currentUserId={user?.id} />
-            </TabsContent>
-
-            <TabsContent value="progress" className="space-y-4">
-              {hasJoined && participation && (
-                <Card className="border-primary/50 bg-primary/5">
-                  <CardHeader>
-                    <CardTitle className="text-base">Your Progress</CardTitle>
-                    <CardDescription>
-                      Overall progress of all participants
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Average Progress</span>
-                        <span>{challenge.average_progress || 0}%</span>
-                      </div>
-                      <Progress value={participation.progress} />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Started: {new Date(participation.started_at!).toLocaleDateString()}</span>
-                        <span>Status: {participation.status}</span>
-                      </div>
-                      <Progress value={challenge.average_progress || 0} />
-                    </div>
+              {loadingParticipants ? (
+                <div className="space-y-3">
+                  {[...Array(4)].map((_, i) => (
+                    <Card key={i}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-muted animate-pulse"></div>
+                            <div>
+                              <div className="h-4 w-32 bg-muted animate-pulse rounded-md"></div>
+                              <div className="h-3 w-24 bg-muted animate-pulse rounded-md mt-1"></div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="h-5 w-20 bg-muted animate-pulse rounded-md mb-1"></div>
+                            <div className="h-2 w-20 bg-muted animate-pulse rounded-md"></div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : participants.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No Participants Yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Be the first to join this challenge!
+                    </p>
+                    {!hasJoined && !isOwner && (
+                      <Button 
+                        variant="hero" 
+                        onClick={handleJoin}
+                        disabled={participationLoading}
+                      >
+                        <Target className="h-4 w-4 mr-2" />
+                        {participationLoading ? "Loading..." : "Start Challenge"}
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
-              )}
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Progress Overview</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">Completion Rate</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Overall Progress</span>
-                          <span>{Math.round(((challenge.completed_count || 0) / (challenge.participant_count || 1)) * 100)}%</span>
+              ) : (
+                <div className="space-y-3">
+                  {participants.map((participant) => (
+                    <Card key={participant.id} className={participant.user_id === user?.id ? "border-primary/50 bg-primary/5" : ""}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={participant.user?.avatar_url || ""} />
+                              <AvatarFallback>
+                                {participant.user?.display_name?.[0] || participant.user?.username?.[0] || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{participant.user?.display_name || participant.user?.username}</p>
+                              <p className="text-sm text-muted-foreground">@{participant.user?.username}</p>
+                              {participant.user_id === user?.id && (
+                                <Badge variant="secondary" className="text-xs mt-1">You</Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge 
+                                variant={participant.status === 'completed' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {participant.status === 'completed' ? (
+                                  <>
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Completed
+                                  </>
+                                ) : (
+                                  <>
+                                    <Play className="h-3 w-3 mr-1" />
+                                    Active
+                                  </>
+                                )}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Progress value={participant.progress} className="w-20 h-2" />
+                              <span className="text-sm font-medium">{participant.progress}%</span>
+                            </div>
+                          </div>
                         </div>
-                        <Progress value={((challenge.completed_count || 0) / (challenge.participant_count || 1)) * 100} />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
                       <CardTitle className="text-base">Average Progress</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -501,7 +590,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
       <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Start Challenge: {challenge.title}</DialogTitle>
+                        <span>Started: {participation.started_at ? format(parseISO(participation.started_at), 'MMM d, yyyy') : 'N/A'}</span>
             <DialogDescription>
               Are you ready to begin this challenge?
             </DialogDescription>
@@ -512,9 +601,9 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
               <p className="text-sm text-muted-foreground">{challenge.description}</p>
             </div>
             <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-1">
+                          <span>{challenge.participant_count ? Math.round((participantStats.completedCount / challenge.participant_count) * 100) : 0}%</span>
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>{challenge.duration_days} days</span>
+                        <Progress value={challenge.participant_count ? (participantStats.completedCount / challenge.participant_count) * 100 : 0} />
               </div>
               <div className="flex items-center gap-1">
                 <Badge className={`${difficultyColors[challenge.difficulty]} text-white`}>
@@ -527,9 +616,9 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
               <ul className="text-sm space-y-1 list-disc pl-5">
                 <li>Daily check-ins to track your progress</li>
                 <li>Complete the challenge in {challenge.duration_days} days</li>
-                <li>Earn {challenge.points_reward || 100} points upon completion</li>
+                          <span>{participantStats.averageProgress}%</span>
               </ul>
-            </div>
+                        <Progress value={participantStats.averageProgress} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setJoinDialogOpen(false)}>
@@ -539,28 +628,49 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
               {joining ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  Starting...
-                </>
-              ) : (
+                  {loadingParticipants ? (
+                    [...Array(3)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                        <div className="flex items-center justify-center w-8 h-8 bg-muted animate-pulse rounded-full"></div>
+                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse"></div>
+                        <div className="flex-1">
+                          <div className="h-4 w-32 bg-muted animate-pulse rounded-md"></div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-16 bg-muted animate-pulse rounded-md"></div>
+                          <div className="h-4 w-12 bg-muted animate-pulse rounded-md"></div>
+                        </div>
+                      </div>
+                    ))
+                  ) : participants.length === 0 ? (
+                    <div className="text-center p-4 bg-muted/50 rounded-lg">
+                      <p className="text-muted-foreground">No participants yet</p>
+                    </div>
+                  ) : (
+                    participants
+                    .sort((a, b) => b.progress - a.progress)
+                    .slice(0, 5)
+                    .map((participant, index) => (
                 <>
                   <Target className="h-4 w-4 mr-2" />
                   Start Challenge
                 </>
               )}
-            </Button>
+                          <AvatarImage src={participant.user?.avatar_url || ""} />
           </DialogFooter>
-        </DialogContent>
+                            {participant.user?.display_name?.[0] || participant.user?.username?.[0] || 'U'}
       </Dialog>
       
       {/* Report Dialog */}
-      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+                          <p className="font-medium text-sm">{participant.user?.display_name || participant.user?.username}</p>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Report Challenge</DialogTitle>
             <DialogDescription>
               Please let us know why you're reporting this challenge
             </DialogDescription>
-          </DialogHeader>
+                    ))
+                  )}
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <h3 className="font-medium">Challenge: {challenge.title}</h3>

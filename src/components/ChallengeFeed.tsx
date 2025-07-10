@@ -21,8 +21,10 @@ import {
   Award,
   Star
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface FeedItem {
   id: string;
@@ -52,108 +54,6 @@ interface FeedItem {
   comments_count: number;
   is_liked?: boolean;
 }
-
-// Mock feed data - in real app, this would come from the database
-const mockFeedItems: FeedItem[] = [
-  {
-    id: '1',
-    type: 'challenge_completed',
-    user: {
-      id: 'user1',
-      username: 'fitnessfan',
-      display_name: 'Sarah Johnson',
-      avatar_url: null
-    },
-    challenge: {
-      id: 'challenge1',
-      title: '30-Day Morning Workout',
-      category: 'Fitness',
-      difficulty: 'medium'
-    },
-    created_at: '2024-01-20T10:00:00Z',
-    likes_count: 15,
-    comments_count: 3,
-    is_liked: false
-  },
-  {
-    id: '2',
-    type: 'achievement_earned',
-    user: {
-      id: 'user2',
-      username: 'challenger1',
-      display_name: 'Alex Chen',
-      avatar_url: null
-    },
-    achievement: {
-      id: 'streak-master',
-      title: 'Streak Master',
-      icon: 'flame',
-      rarity: 'rare'
-    },
-    created_at: '2024-01-20T09:30:00Z',
-    likes_count: 8,
-    comments_count: 1,
-    is_liked: true
-  },
-  {
-    id: '3',
-    type: 'challenge_created',
-    user: {
-      id: 'user3',
-      username: 'mindful_mike',
-      display_name: 'Mike Wilson',
-      avatar_url: null
-    },
-    challenge: {
-      id: 'challenge2',
-      title: 'Daily Meditation Practice',
-      category: 'Mindfulness',
-      difficulty: 'easy'
-    },
-    content: 'Join me in building a consistent meditation habit! Perfect for beginners.',
-    created_at: '2024-01-20T08:15:00Z',
-    likes_count: 12,
-    comments_count: 5,
-    is_liked: false
-  },
-  {
-    id: '4',
-    type: 'progress_update',
-    user: {
-      id: 'user4',
-      username: 'growth_guru',
-      display_name: 'Emma Davis',
-      avatar_url: null
-    },
-    challenge: {
-      id: 'challenge3',
-      title: 'Learn Spanish in 60 Days',
-      category: 'Learning',
-      difficulty: 'hard'
-    },
-    content: 'Day 15 update: Finally starting to think in Spanish! The daily practice is really paying off. 🇪🇸',
-    metadata: { progress: 25, day: 15 },
-    created_at: '2024-01-19T19:45:00Z',
-    likes_count: 6,
-    comments_count: 2,
-    is_liked: false
-  },
-  {
-    id: '5',
-    type: 'streak_milestone',
-    user: {
-      id: 'user5',
-      username: 'streak_king',
-      display_name: 'David Brown',
-      avatar_url: null
-    },
-    metadata: { streak_days: 30 },
-    created_at: '2024-01-19T16:20:00Z',
-    likes_count: 20,
-    comments_count: 7,
-    is_liked: true
-  }
-];
 
 const getActivityIcon = (type: string) => {
   switch (type) {
@@ -202,9 +102,64 @@ const difficultyColors: Record<string, string> = {
 
 export function ChallengeFeed() {
   const { user } = useAuth();
-  const [feedItems, setFeedItems] = useState<FeedItem[]>(mockFeedItems);
+  const { toast } = useToast();
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [activeTab, setActiveTab] = useState("all");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchActivityFeed = async (tabFilter = activeTab, append = false) => {
+    setLoading(true);
+    try {
+      // TODO: Implement real activity feed API
+      // For now, we'll simulate a delay and return empty data
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // This is where you would call your API
+      // const { data, error } = await supabase.rpc('get_activity_feed', {
+      //   filter: tabFilter === 'all' ? null : tabFilter,
+      //   limit_count: 10,
+      //   offset_count: page * 10
+      // });
+      
+      // Simulate empty data for now
+      const data = {
+        success: true,
+        activities: [],
+        has_more: false
+      };
+      
+      if (data && data.success) {
+        if (append) {
+          setFeedItems(prev => [...prev, ...data.activities]);
+        } else {
+          setFeedItems(data.activities || []);
+        }
+        setHasMore(data.has_more || false);
+      }
+    } catch (error: any) {
+      console.error('Error fetching activity feed:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load activity feed",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setPage(0);
+    fetchActivityFeed(activeTab);
+  }, [activeTab]);
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchActivityFeed(activeTab, true);
+  };
 
   const handleLike = (itemId: string) => {
     setFeedItems(prev => prev.map(item => 
@@ -250,7 +205,7 @@ export function ChallengeFeed() {
                 </p>
               </div>
               <p className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                {formatDistanceToNow(parseISO(item.created_at), { addSuffix: true })}
               </p>
             </div>
           </div>
@@ -420,7 +375,7 @@ export function ChallengeFeed() {
           {getFilteredItems().length > 0 && (
             <div className="text-center">
               <Button variant="outline" disabled={loading}>
-                {loading ? "Loading..." : "Load More"}
+                {loading ? "Loading..." : hasMore ? "Load More" : "No More Activities"}
               </Button>
             </div>
           )}
@@ -428,47 +383,49 @@ export function ChallengeFeed() {
       </Tabs>
 
       {/* Activity Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Trophy className="h-6 w-6 text-yellow-600 mx-auto mb-2" />
-            <p className="text-lg font-bold">
-              {feedItems.filter(item => item.type === 'challenge_completed').length}
-            </p>
-            <p className="text-xs text-muted-foreground">Challenges Completed</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Plus className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-            <p className="text-lg font-bold">
-              {feedItems.filter(item => item.type === 'challenge_created').length}
-            </p>
-            <p className="text-xs text-muted-foreground">New Challenges</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Award className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-            <p className="text-lg font-bold">
-              {feedItems.filter(item => item.type === 'achievement_earned').length}
-            </p>
-            <p className="text-xs text-muted-foreground">Achievements Earned</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Flame className="h-6 w-6 text-orange-600 mx-auto mb-2" />
-            <p className="text-lg font-bold">
-              {feedItems.filter(item => item.type === 'streak_milestone').length}
-            </p>
-            <p className="text-xs text-muted-foreground">Streak Milestones</p>
-          </CardContent>
-        </Card>
-      </div>
+      {feedItems.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Trophy className="h-6 w-6 text-yellow-600 mx-auto mb-2" />
+              <p className="text-lg font-bold">
+                {feedItems.filter(item => item.type === 'challenge_completed').length}
+              </p>
+              <p className="text-xs text-muted-foreground">Challenges Completed</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Plus className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+              <p className="text-lg font-bold">
+                {feedItems.filter(item => item.type === 'challenge_created').length}
+              </p>
+              <p className="text-xs text-muted-foreground">New Challenges</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Award className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+              <p className="text-lg font-bold">
+                {feedItems.filter(item => item.type === 'achievement_earned').length}
+              </p>
+              <p className="text-xs text-muted-foreground">Achievements Earned</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Flame className="h-6 w-6 text-orange-600 mx-auto mb-2" />
+              <p className="text-lg font-bold">
+                {feedItems.filter(item => item.type === 'streak_milestone').length}
+              </p>
+              <p className="text-xs text-muted-foreground">Streak Milestones</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

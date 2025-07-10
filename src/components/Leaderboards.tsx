@@ -19,14 +19,19 @@ import {
   Zap
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface LeaderboardUser {
   id: string;
+  user_id: string;
   username: string;
   display_name: string;
   avatar_url?: string;
   rank: number;
   score: number;
+  challenges_completed?: number;
+  total_points?: number;
   change: number; // Position change from last period
   badge?: string;
 }
@@ -35,40 +40,14 @@ interface LeaderboardsProps {
   challengeId?: string; // If provided, show challenge-specific leaderboard
 }
 
-// Mock leaderboard data - in real app, this would come from the database
-const mockGlobalLeaderboard: LeaderboardUser[] = [
-  { id: '1', username: 'challenger_supreme', display_name: 'Alex Chen', rank: 1, score: 2850, change: 0, badge: 'legend' },
-  { id: '2', username: 'fitness_warrior', display_name: 'Sarah Johnson', rank: 2, score: 2720, change: 1, badge: 'master' },
-  { id: '3', username: 'mindful_master', display_name: 'Mike Wilson', rank: 3, score: 2650, change: -1, badge: 'expert' },
-  { id: '4', username: 'growth_guru', display_name: 'Emma Davis', rank: 4, score: 2480, change: 2 },
-  { id: '5', username: 'streak_king', display_name: 'David Brown', rank: 5, score: 2350, change: -1 },
-  { id: '6', username: 'challenge_ace', display_name: 'Lisa Wang', rank: 6, score: 2280, change: 3 },
-  { id: '7', username: 'motivation_max', display_name: 'Tom Garcia', rank: 7, score: 2150, change: -2 },
-  { id: '8', username: 'progress_pro', display_name: 'Anna Miller', rank: 8, score: 2050, change: 1 },
-  { id: '9', username: 'habit_hero', display_name: 'Chris Lee', rank: 9, score: 1980, change: -1 },
-  { id: '10', username: 'daily_driver', display_name: 'Maya Patel', rank: 10, score: 1920, change: 0 },
-];
-
-const mockStreakLeaderboard: LeaderboardUser[] = [
-  { id: '1', username: 'streak_legend', display_name: 'Alex Chen', rank: 1, score: 45, change: 0 },
-  { id: '2', username: 'consistency_king', display_name: 'Sarah Johnson', rank: 2, score: 38, change: 1 },
-  { id: '3', username: 'daily_champion', display_name: 'Mike Wilson', rank: 3, score: 35, change: -1 },
-  { id: '4', username: 'habit_master', display_name: 'Emma Davis', rank: 4, score: 32, change: 0 },
-  { id: '5', username: 'routine_ruler', display_name: 'David Brown', rank: 5, score: 28, change: 2 },
-];
-
-const mockChallengeLeaderboard: LeaderboardUser[] = [
-  { id: '1', username: 'challenge_crusher', display_name: 'Alex Chen', rank: 1, score: 15, change: 0 },
-  { id: '2', username: 'goal_getter', display_name: 'Sarah Johnson', rank: 2, score: 12, change: 1 },
-  { id: '3', username: 'achievement_ace', display_name: 'Mike Wilson', rank: 3, score: 10, change: -1 },
-  { id: '4', username: 'victory_veteran', display_name: 'Emma Davis', rank: 4, score: 8, change: 0 },
-  { id: '5', username: 'success_seeker', display_name: 'David Brown', rank: 5, score: 7, change: 1 },
-];
 
 const badgeColors = {
   legend: "bg-gradient-to-r from-yellow-400 to-yellow-600 text-white",
   master: "bg-gradient-to-r from-purple-400 to-purple-600 text-white",
-  expert: "bg-gradient-to-r from-blue-400 to-blue-600 text-white"
+  expert: "bg-gradient-to-r from-blue-400 to-blue-600 text-white",
+  gold: "bg-gradient-to-r from-yellow-400 to-yellow-600 text-white",
+  silver: "bg-gradient-to-r from-gray-300 to-gray-500 text-white",
+  bronze: "bg-gradient-to-r from-amber-500 to-amber-700 text-white"
 };
 
 const getRankIcon = (rank: number) => {
@@ -97,19 +76,89 @@ export function Leaderboards({ challengeId }: LeaderboardsProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("global");
   const [timeframe, setTimeframe] = useState("all-time");
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
+  const [userRank, setUserRank] = useState<LeaderboardUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [challengeTitle, setChallengeTitle] = useState("");
+  const { toast } = useToast();
 
-  const getLeaderboardData = () => {
-    switch (activeTab) {
-      case "global":
-        return mockGlobalLeaderboard;
-      case "streaks":
-        return mockStreakLeaderboard;
-      case "challenges":
-        return mockChallengeLeaderboard;
-      default:
-        return mockGlobalLeaderboard;
+  const fetchLeaderboardData = async () => {
+    setLoading(true);
+    try {
+      let data;
+      
+      if (challengeId) {
+        // Fetch challenge-specific leaderboard
+        const { data: response, error } = await supabase.rpc('get_challenge_leaderboard', {
+          challenge_id_param: challengeId,
+          limit_count: 10,
+          offset_count: 0
+        });
+        
+        if (error) throw error;
+        
+        if (response && response.success) {
+          data = response;
+          setChallengeTitle(response.challenge_title || "Challenge Leaderboard");
+        } else {
+          throw new Error(response.message || "Failed to fetch leaderboard");
+        }
+      } else {
+        // Fetch global or streak leaderboard based on active tab
+        if (activeTab === "streaks") {
+          const { data: response, error } = await supabase.rpc('get_streak_leaderboard', {
+            limit_count: 10,
+            offset_count: 0
+          });
+          
+          if (error) throw error;
+          
+          if (response && response.success) {
+            data = response;
+          } else {
+            throw new Error(response.message || "Failed to fetch streak leaderboard");
+          }
+        } else {
+          // Global leaderboard
+          const { data: response, error } = await supabase.rpc('get_global_leaderboard', {
+            timeframe: timeframe,
+            limit_count: 10,
+            offset_count: 0
+          });
+          
+          if (error) throw error;
+          
+          if (response && response.success) {
+            data = response;
+          } else {
+            throw new Error(response.message || "Failed to fetch global leaderboard");
+          }
+        }
+      }
+      
+      if (data) {
+        setLeaderboardData(data.leaderboard || []);
+        setUserRank(data.user_rank || null);
+        setTotalCount(data.total || 0);
+      }
+    } catch (error: any) {
+      console.error('Error fetching leaderboard:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch leaderboard data",
+        variant: "destructive",
+      });
+      setLeaderboardData([]);
+      setUserRank(null);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchLeaderboardData();
+  }, [challengeId, activeTab, timeframe]);
 
   const getScoreLabel = () => {
     switch (activeTab) {
@@ -152,8 +201,23 @@ export function Leaderboards({ challengeId }: LeaderboardsProps) {
     }
   };
 
-  const leaderboardData = getLeaderboardData();
-  const userRank = leaderboardData.find(u => u.id === user?.id);
+  // Get score value based on the active tab
+  const getScoreValue = (user: LeaderboardUser) => {
+    if (challengeId) {
+      return user.score; // Progress for challenge leaderboard
+    }
+    
+    switch (activeTab) {
+      case "global":
+        return user.total_points || user.score;
+      case "streaks":
+        return user.current_streak || user.score;
+      case "challenges":
+        return user.challenges_completed || user.score;
+      default:
+        return user.score;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -213,7 +277,7 @@ export function Leaderboards({ challengeId }: LeaderboardsProps) {
                 <div>
                   <p className="font-medium">Your Position</p>
                   <p className="text-sm text-muted-foreground">
-                    #{userRank.rank} • {userRank.score} {getScoreLabel().toLowerCase()}
+                    #{userRank.rank} • {getScoreValue(userRank)} {getScoreLabel().toLowerCase()}
                   </p>
                 </div>
               </div>
@@ -253,134 +317,175 @@ export function Leaderboards({ challengeId }: LeaderboardsProps) {
       {/* Leaderboard List */}
       <Card>
         <CardContent className="p-0">
-          <div className="space-y-0">
-            {leaderboardData.map((user, index) => (
-              <div
-                key={user.id}
-                className={`flex items-center gap-4 p-4 border-b last:border-b-0 transition-colors hover:bg-muted/50 ${
-                  user.id === user?.id ? 'bg-primary/5' : ''
-                }`}
-              >
-                {/* Rank */}
-                <div className="flex items-center justify-center w-12">
-                  {getRankIcon(user.rank)}
-                </div>
-
-                {/* User Info */}
-                <div className="flex items-center gap-3 flex-1">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.avatar_url} />
-                    <AvatarFallback>
-                      {user.display_name[0] || user.username[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{user.display_name}</p>
-                      {user.badge && (
-                        <Badge className={`text-xs ${badgeColors[user.badge as keyof typeof badgeColors]}`}>
-                          {user.badge}
-                        </Badge>
-                      )}
+          {loading ? (
+            <div className="space-y-0">
+              {[...Array(5)].map((_, index) => (
+                <div key={index} className="flex items-center gap-4 p-4 border-b last:border-b-0">
+                  <div className="flex items-center justify-center w-12">
+                    <div className="h-6 w-6 rounded-full bg-muted animate-pulse"></div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="h-10 w-10 rounded-full bg-muted animate-pulse"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 w-32 bg-muted animate-pulse rounded-md"></div>
+                      <div className="h-3 w-24 bg-muted animate-pulse rounded-md"></div>
                     </div>
-                    <p className="text-sm text-muted-foreground">@{user.username}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="h-6 w-16 bg-muted animate-pulse rounded-md"></div>
+                    <div className="h-3 w-12 bg-muted animate-pulse rounded-md mt-1"></div>
                   </div>
                 </div>
+              ))}
+            </div>
+          ) : leaderboardData.length === 0 ? (
+            <div className="p-8 text-center">
+              <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
+              <p className="text-muted-foreground">
+                {challengeId 
+                  ? "No participants in this challenge yet." 
+                  : activeTab === "streaks" 
+                    ? "No active streaks found."
+                    : "No leaderboard data available."}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-0">
+              {leaderboardData.map((leaderboardUser) => (
+                <div
+                  key={leaderboardUser.id}
+                  className={`flex items-center gap-4 p-4 border-b last:border-b-0 transition-colors hover:bg-muted/50 ${
+                    leaderboardUser.user_id === user?.id ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  {/* Rank */}
+                  <div className="flex items-center justify-center w-12">
+                    {getRankIcon(leaderboardUser.rank)}
+                  </div>
 
-                {/* Score */}
-                <div className="text-right">
-                  <p className="text-lg font-bold">{user.score.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">{getScoreLabel()}</p>
-                </div>
+                  {/* User Info */}
+                  <div className="flex items-center gap-3 flex-1">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={leaderboardUser.avatar_url} />
+                      <AvatarFallback>
+                        {leaderboardUser.display_name[0] || leaderboardUser.username[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{leaderboardUser.display_name}</p>
+                        {leaderboardUser.badge && (
+                          <Badge className={`text-xs ${badgeColors[leaderboardUser.badge as keyof typeof badgeColors]}`}>
+                            {leaderboardUser.badge}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">@{leaderboardUser.username}</p>
+                    </div>
+                  </div>
 
-                {/* Change Indicator */}
-                <div className="flex items-center gap-1 w-16 justify-end">
-                  {getChangeIndicator(user.change)}
-                  {user.change !== 0 && (
-                    <span className={`text-xs ${user.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {Math.abs(user.change)}
-                    </span>
-                  )}
+                  {/* Score */}
+                  <div className="text-right">
+                    <p className="text-lg font-bold">{getScoreValue(leaderboardUser).toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">{getScoreLabel()}</p>
+                  </div>
+
+                  {/* Change Indicator */}
+                  <div className="flex items-center gap-1 w-16 justify-end">
+                    {getChangeIndicator(leaderboardUser.change)}
+                    {leaderboardUser.change !== 0 && (
+                      <span className={`text-xs ${leaderboardUser.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {Math.abs(leaderboardUser.change)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Top Performers Spotlight */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5" />
-            Top Performers
-          </CardTitle>
-          <CardDescription>
-            Celebrating our community champions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {leaderboardData.slice(0, 3).map((user, index) => (
-              <Card key={user.id} className={`text-center ${index === 0 ? 'border-yellow-200 bg-yellow-50/50' : ''}`}>
-                <CardContent className="p-4">
-                  <div className="mb-3">
-                    {getRankIcon(user.rank)}
-                  </div>
-                  <Avatar className="h-16 w-16 mx-auto mb-3">
-                    <AvatarImage src={user.avatar_url} />
-                    <AvatarFallback className="text-lg">
-                      {user.display_name[0] || user.username[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <h3 className="font-semibold">{user.display_name}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">@{user.username}</p>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-primary">{user.score.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">{getScoreLabel()}</p>
-                  </div>
-                  {user.badge && (
-                    <Badge className={`mt-2 ${badgeColors[user.badge as keyof typeof badgeColors]}`}>
-                      {user.badge}
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {!loading && leaderboardData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              Top Performers
+            </CardTitle>
+            <CardDescription>
+              Celebrating our community champions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {leaderboardData.slice(0, 3).map((leaderboardUser, index) => (
+                <Card key={leaderboardUser.id} className={`text-center ${index === 0 ? 'border-yellow-200 bg-yellow-50/50' : ''}`}>
+                  <CardContent className="p-4">
+                    <div className="mb-3">
+                      {getRankIcon(leaderboardUser.rank)}
+                    </div>
+                    <Avatar className="h-16 w-16 mx-auto mb-3">
+                      <AvatarImage src={leaderboardUser.avatar_url} />
+                      <AvatarFallback className="text-lg">
+                        {leaderboardUser.display_name[0] || leaderboardUser.username[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h3 className="font-semibold">{leaderboardUser.display_name}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">@{leaderboardUser.username}</p>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-primary">{getScoreValue(leaderboardUser).toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">{getScoreLabel()}</p>
+                    </div>
+                    {leaderboardUser.badge && (
+                      <Badge className={`mt-2 ${badgeColors[leaderboardUser.badge as keyof typeof badgeColors]}`}>
+                        {leaderboardUser.badge}
+                      </Badge>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Competition Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Users className="h-8 w-8 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-bold">{leaderboardData.length}</p>
-            <p className="text-sm text-muted-foreground">Active Competitors</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Zap className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold">
-              {leaderboardData.reduce((sum, user) => sum + user.score, 0).toLocaleString()}
-            </p>
-            <p className="text-sm text-muted-foreground">Total {getScoreLabel()}</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold">
-              {Math.round(leaderboardData.reduce((sum, user) => sum + user.score, 0) / leaderboardData.length)}
-            </p>
-            <p className="text-sm text-muted-foreground">Average Score</p>
-          </CardContent>
-        </Card>
-      </div>
+      {!loading && leaderboardData.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Users className="h-8 w-8 text-primary mx-auto mb-2" />
+              <p className="text-2xl font-bold">{totalCount}</p>
+              <p className="text-sm text-muted-foreground">Active Competitors</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Zap className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold">
+                {leaderboardData.reduce((sum, user) => sum + getScoreValue(user), 0).toLocaleString()}
+              </p>
+              <p className="text-sm text-muted-foreground">Total {getScoreLabel()}</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold">
+                {leaderboardData.length > 0 
+                  ? Math.round(leaderboardData.reduce((sum, user) => sum + getScoreValue(user), 0) / leaderboardData.length)
+                  : 0}
+              </p>
+              <p className="text-sm text-muted-foreground">Average Score</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
