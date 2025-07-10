@@ -120,8 +120,8 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
         text: `Check out this challenge: ${challenge.title}`,
         url: shareUrl,
       }).catch(err => {
-        console.error('Error sharing:', err);
-        // Fallback to copy to clipboard
+        // Silently fallback to copy to clipboard if sharing fails
+        // This handles permission denied errors and other sharing issues
         copyToClipboard(shareUrl);
       });
     } else {
