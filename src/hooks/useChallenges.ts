@@ -27,6 +27,12 @@ export function useChallenges() {
       try {
         // First try to get challenges with real participant stats
         const result = await supabase.rpc('get_challenges_with_stats');
+        
+        if (result.error) {
+          console.warn('RPC function not available, falling back to basic query:', result.error);
+          throw new Error('RPC not available');
+        }
+        
         data = result.data;
         error = result.error;
       } catch (rpcError) {
