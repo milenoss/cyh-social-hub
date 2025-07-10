@@ -62,10 +62,10 @@ export function Footer() {
               Have questions or feedback?
             </p>
             <a 
-              href="mailto:milenkhanal@gmail.com" 
+              href="mailto:chooseyourharduk@gmail.com" 
               className="text-primary hover:underline"
             >
-              milenkhanal@gmail.com
+              chooseyourharduk@gmail.com
             </a>
             <div className="mt-4">
               <p className="text-sm text-muted-foreground">

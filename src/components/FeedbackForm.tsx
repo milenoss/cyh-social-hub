@@ -38,7 +38,7 @@ export function FeedbackForm({ trigger, challengeId, challengeTitle }: FeedbackF
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Log the feedback data that would be sent
-      console.log("Feedback would be sent to: milenkhanal@gmail.com");
+      console.log("Feedback would be sent to: chooseyourharduk@gmail.com");
       console.log("Feedback data:", {
         ...formData,
         userId: user?.id || "anonymous",
@@ -149,7 +149,7 @@ export function FeedbackForm({ trigger, challengeId, challengeTitle }: FeedbackF
           
           <Alert>
             <AlertDescription>
-              Your feedback will be sent to our team at milenkhanal@gmail.com and helps us improve the platform.
+              Your feedback will be sent to our team at chooseyourharduk@gmail.com and helps us improve the platform.
             </AlertDescription>
           </Alert>
           
