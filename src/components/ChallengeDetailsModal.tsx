@@ -9,6 +9,7 @@ import { Calendar, Clock, Users, Trophy, Flag, Target, Share2 } from 'lucide-rea
 import { toast } from 'sonner';
 import { RealParticipantsList } from './RealParticipantsList';
 import { ChallengeComments } from './ChallengeComments';
+import { FeedbackDialog } from './FeedbackDialog';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Challenge {
@@ -154,7 +155,16 @@ export function ChallengeDetailsModal({
                   onClick={handleReportChallenge}
                   disabled={reportSubmitting}
                 >
-                  <Flag className="w-4 h-4" />
+                  <FeedbackDialog 
+                    trigger={
+                      <div className="flex items-center gap-2">
+                        <Flag className="h-4 w-4" />
+                        <span>Report</span>
+                      </div>
+                    }
+                    challengeId={challenge.id}
+                    challengeTitle={challenge.title}
+                  />
                 </Button>
               </div>
             </TabsContent>

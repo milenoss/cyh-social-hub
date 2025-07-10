@@ -2,10 +2,11 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Target, User, Trophy, Users, LogOut } from "lucide-react";
+import { Target, User, Trophy, Users, LogOut, MessageSquare } from "lucide-react";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FeedbackDialog } from "@/components/FeedbackDialog";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
@@ -69,7 +70,10 @@ export function Navigation() {
           {/* User Actions */}
           <div className="flex items-center space-x-3">
             {/* Theme Toggle */}
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <FeedbackDialog />
+            </div>
             
             {user ? (
               <>

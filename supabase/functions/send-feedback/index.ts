@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.50.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,8 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-serve(async (req) => {
-  // Handle CORS preflight request
+serve(async (req: Request) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -17,27 +16,14 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    const { type, subject, message, email, challenge_id, challenge_title, user_id, user_email } = await req.json();
 
-    // Get request body
-    const { type, subject, message, email, challengeId, challengeTitle, userId } = await req.json();
-
-    // Validate inputs
-    if (!subject || !message || !email) {
+    // Validate required fields
+    if (!type || !subject || !message || !email) {
       return new Response(
         JSON.stringify({
           success: false,
-          message: "Missing required parameters",
+          message: "Missing required fields",
         }),
         {
           status: 400,
@@ -49,55 +35,51 @@ serve(async (req) => {
       );
     }
 
-    // Get user details if userId is provided
-    let userDetails = null;
-    if (userId) {
-      const { data: user, error: userError } = await supabaseClient.auth.admin.getUserById(userId);
-      if (!userError && user) {
-        userDetails = user;
-      }
-    }
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    // Store feedback in database for record-keeping
-    const { data: feedbackRecord, error: feedbackError } = await supabaseClient
+    // Store feedback in the database
+    const { data, error } = await supabaseClient
       .from("feedback")
       .insert({
         type,
         subject,
         message,
         email,
-        challenge_id: challengeId,
-        challenge_title: challengeTitle,
-        user_id: userId,
-        user_email: userDetails?.user?.email,
+        challenge_id,
+        challenge_title,
+        user_id,
+        user_email,
       })
       .select()
       .single();
 
-    if (feedbackError) {
-      console.error("Error storing feedback:", feedbackError);
-    }
+    if (error) throw error;
 
-    // Send email using Email.js or another email service
-    // This is where you would integrate with an email service
-    // For now, we'll just log the email content and return success
-    
-    console.log("Email would be sent to: chooseyourharduk@gmail.com");
-    console.log("Subject:", subject);
-    console.log("From:", email);
-    console.log("Message:", message);
-    console.log("Type:", type);
-    console.log("Challenge:", challengeId ? `${challengeTitle} (${challengeId})` : "N/A");
-    console.log("User:", userId ? `${userDetails?.user?.email} (${userId})` : "Anonymous");
-
-    // In a real implementation, you would send an actual email here
-    // For example, using SendGrid, Mailgun, or another email service
+    // In a real implementation, you would send an email here
+    // For example, using a service like SendGrid, Mailgun, or AWS SES
+    // Example with SendGrid (you would need to add the SendGrid SDK):
+    // 
+    // const sgMail = await import("npm:@sendgrid/mail");
+    // sgMail.setApiKey(Deno.env.get("SENDGRID_API_KEY"));
+    // await sgMail.send({
+    //   to: "admin@chooseyourhard.co.uk",
+    //   from: "noreply@chooseyourhard.co.uk",
+    //   subject: `Feedback: ${subject}`,
+    //   text: `Type: ${type}\nFrom: ${email}\nMessage: ${message}`,
+    //   html: `<p><strong>Type:</strong> ${type}</p>
+    //          <p><strong>From:</strong> ${email}</p>
+    //          <p><strong>Message:</strong> ${message}</p>`,
+    // });
 
     return new Response(
       JSON.stringify({
         success: true,
         message: "Feedback submitted successfully",
-        id: feedbackRecord?.id,
+        data,
       }),
       {
         status: 200,
@@ -124,3 +106,6 @@ serve(async (req) => {
     );
   }
 });
+
+// Import createClient from Supabase
+import { createClient } from "npm:@supabase/supabase-js@2.50.4";
