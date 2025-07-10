@@ -5,8 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { Calendar, Clock, Users, Trophy, Flag } from 'lucide-react';
+import { Calendar, Clock, Users, Trophy, Flag, Target, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { RealParticipantsList } from './RealParticipantsList';
+import { ChallengeComments } from './ChallengeComments';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Challenge {
   id: string;
@@ -42,6 +45,7 @@ interface ChallengeDetailsModalProps {
   participants?: Participant[];
 }
 
+
 const difficultyLabels: Record<string, string> = {
   easy: "Easy",
   medium: "Medium",
@@ -64,6 +68,8 @@ export function ChallengeDetailsModal({
   participants = []
 }: ChallengeDetailsModalProps) {
   const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState('description');
+  const { user } = useAuth();
 
   if (!challenge) return null;
 
@@ -124,11 +130,11 @@ export function ChallengeDetailsModal({
             </div>
           )}
 
-          <Tabs defaultValue="description" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="description">Description</TabsTrigger>
               <TabsTrigger value="participants">Participants</TabsTrigger>
-              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="discussion">Discussion</TabsTrigger>
             </TabsList>
             
             <TabsContent value="description" className="space-y-4">
@@ -154,69 +160,18 @@ export function ChallengeDetailsModal({
             </TabsContent>
             
             <TabsContent value="participants" className="space-y-4">
-              <div className="space-y-3">
-                <h4 className="font-semibold">Active Participants ({participants.length})</h4>
-                <div className="space-y-3 max-h-60 overflow-y-auto">
-                  {participants.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">
-                      No participants yet. Be the first to join!
-                    </p>
-                  ) : (
-                    participants.map((participant) => (
-                      <div key={participant.id} className="flex items-center gap-3 p-3 rounded-lg border">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={participant.user?.avatar_url} />
-                          <AvatarFallback>
-                            {participant.user?.display_name?.[0] || participant.user?.username?.[0] || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">
-                            {participant.user?.display_name || participant.user?.username || 'Anonymous'}
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <Progress value={participant.progress} className="w-16 h-1.5" />
-                            <span className="text-xs font-medium">{participant.progress}%</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
+              <RealParticipantsList 
+                challengeId={challenge.id} 
+                currentUserId={user?.id}
+                showAsLeaderboard={true}
+              />
             </TabsContent>
             
-            <TabsContent value="details" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Duration</h4>
-                  <p className="text-muted-foreground text-sm">{challenge.duration_days} days</p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Difficulty</h4>
-                  <p className="text-muted-foreground text-sm">{difficultyLabels[challenge.difficulty]}</p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Category</h4>
-                  <p className="text-muted-foreground text-sm">{challenge.category}</p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Points Reward</h4>
-                  <p className="text-muted-foreground text-sm">{challenge.points_reward} points</p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Created</h4>
-                  <p className="text-muted-foreground text-sm">
-                    {new Date(challenge.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Visibility</h4>
-                  <p className="text-muted-foreground text-sm">
-                    {challenge.is_public ? 'Public' : 'Private'}
-                  </p>
-                </div>
-              </div>
+            <TabsContent value="discussion" className="space-y-4">
+              <ChallengeComments 
+                challengeId={challenge.id}
+                challengeOwnerId={challenge.created_by}
+              />
             </TabsContent>
           </Tabs>
         </div>
