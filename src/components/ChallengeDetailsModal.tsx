@@ -298,7 +298,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
             <Card>
               <CardContent className="p-4 text-center">
                 <CheckCircle className="h-5 w-5 text-green-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold">{completedParticipants}</p>
+                <p className="text-2xl font-bold">{challenge.completed_count || 0}</p>
                 <p className="text-xs text-muted-foreground">Completed</p>
               </CardContent>
             </Card>
@@ -452,9 +452,9 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Overall Progress</span>
-                          <span>{Math.round((completedParticipants / mockParticipants.length) * 100)}%</span>
+                          <span>{Math.round(((challenge.completed_count || 0) / (challenge.participant_count || 1)) * 100)}%</span>
                         </div>
-                        <Progress value={(completedParticipants / mockParticipants.length) * 100} />
+                        <Progress value={((challenge.completed_count || 0) / (challenge.participant_count || 1)) * 100} />
                       </div>
                     </CardContent>
                   </Card>
@@ -467,9 +467,9 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Active Participants</span>
-                          <span>{Math.round(mockParticipants.reduce((acc, p) => acc + p.progress, 0) / mockParticipants.length)}%</span>
+                          <span>{challenge.average_progress || 0}%</span>
                         </div>
-                        <Progress value={mockParticipants.reduce((acc, p) => acc + p.progress, 0) / mockParticipants.length} />
+                        <Progress value={challenge.average_progress || 0} />
                       </div>
                     </CardContent>
                   </Card>
