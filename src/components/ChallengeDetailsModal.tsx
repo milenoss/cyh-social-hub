@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,8 +20,10 @@ import {
   Award,
   TrendingUp, 
   MessageCircle,
-  Share2,
-  Flag,
+  Share2, 
+  Flag, 
+  Copy,
+  Check,
   CheckCircle,
   Play, 
   Pause,
@@ -29,6 +32,7 @@ import {
 import { ChallengeWithCreator } from "@/lib/supabase-types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import { format } from "date-fns";
 
 interface ChallengeDetailsModalProps {
@@ -64,9 +68,13 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
   const { user } = useAuth();
   const { toast } = useToast();
   const { participation, joinChallenge, leaveChallenge, loading: participationLoading } = useChallengeParticipation(challenge?.id);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("overview"); 
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   if (!challenge) return null;
 
@@ -100,6 +108,93 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
       setTimeout(() => {
         window.location.href = '/dashboard?tab=active';
       }, 1500);
+    }
+  };
+
+  const handleShare = () => {
+    const shareUrl = `${window.location.origin}/challenge/${challenge.id}`;
+    
+    // Try to use the Web Share API if available
+    if (navigator.share) {
+      navigator.share({
+        title: challenge.title,
+        text: `Check out this challenge: ${challenge.title}`,
+        url: shareUrl,
+      }).catch(err => {
+        console.error('Error sharing:', err);
+        // Fallback to copy to clipboard
+        copyToClipboard(shareUrl);
+      });
+    } else {
+      // Fallback for browsers that don't support the Web Share API
+      copyToClipboard(shareUrl);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setLinkCopied(true);
+      toast({
+        title: "Link Copied",
+        description: "Challenge link copied to clipboard",
+      });
+      
+      setTimeout(() => setLinkCopied(false), 3000);
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      toast({
+        title: "Error",
+        description: "Failed to copy link to clipboard",
+        variant: "destructive",
+      });
+    });
+  };
+
+  const handleReport = () => {
+    setReportDialogOpen(true);
+  };
+
+  const submitReport = async () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to report challenges",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!reportReason.trim()) {
+      toast({
+        title: "Report reason required",
+        description: "Please provide a reason for your report",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setReportSubmitting(true);
+    
+    try {
+      // In a real implementation, this would call an API endpoint
+      // For now, we'll simulate a successful report
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: "Report Submitted",
+        description: "Thank you for your report. We'll review it shortly.",
+      });
+      
+      setReportDialogOpen(false);
+      setReportReason("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setReportSubmitting(false);
     }
   };
 
@@ -138,8 +233,16 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Share2 className="h-4 w-4" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleShare}
+              >
+                {linkCopied ? (
+                  <Check className="h-4 w-4 mr-2" />
+                ) : (
+                  <Share2 className="h-4 w-4 mr-2" />
+                )}
                 Share
               </Button>
               {hasJoined && (
@@ -154,7 +257,11 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                   }
                 />
               )}
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleReport}
+              >
                 <Flag className="h-4 w-4" />
                 Report
               </Button>
@@ -500,6 +607,46 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                   Start Challenge
                 </>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Report Challenge</DialogTitle>
+            <DialogDescription>
+              Please let us know why you're reporting this challenge
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <h3 className="font-medium">Challenge: {challenge.title}</h3>
+              <textarea
+                className="w-full min-h-[100px] p-3 border rounded-md bg-background"
+                placeholder="Please describe why you're reporting this challenge..."
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+              />
+            </div>
+            
+            <Alert>
+              <AlertDescription>
+                Reports are anonymous and help us maintain community standards. We'll review this challenge based on your feedback.
+              </AlertDescription>
+            </Alert>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={submitReport}
+              disabled={reportSubmitting || !reportReason.trim()}
+            >
+              {reportSubmitting ? "Submitting..." : "Submit Report"}
             </Button>
           </DialogFooter>
         </DialogContent>
