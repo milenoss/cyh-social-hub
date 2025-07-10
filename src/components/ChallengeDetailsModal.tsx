@@ -275,7 +275,6 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                   </Button>
                 }
               />
-              </Button>
             </div>
           </div>
         </DialogHeader>
