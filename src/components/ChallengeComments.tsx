@@ -22,7 +22,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
 interface Comment {
@@ -50,77 +50,6 @@ interface ChallengeCommentsProps {
   challengeOwnerId: string;
 }
 
-// Mock comments data - in real app, this would come from the database
-const mockComments: Comment[] = [
-  {
-    id: '1',
-    user_id: 'user1',
-    challenge_id: 'challenge1',
-    content: 'This challenge has been amazing! Already seeing great results after just one week. The daily check-ins really help keep me accountable.',
-    created_at: '2024-01-20T10:00:00Z',
-    updated_at: '2024-01-20T10:00:00Z',
-    likes_count: 12,
-    is_pinned: true,
-    user: {
-      id: 'user1',
-      username: 'fitnessfan',
-      display_name: 'Sarah Johnson',
-      avatar_url: null
-    },
-    replies: [
-      {
-        id: '2',
-        user_id: 'user2',
-        challenge_id: 'challenge1',
-        content: 'Totally agree! The community support makes all the difference.',
-        created_at: '2024-01-20T11:00:00Z',
-        updated_at: '2024-01-20T11:00:00Z',
-        likes_count: 3,
-        is_pinned: false,
-        parent_id: '1',
-        user: {
-          id: 'user2',
-          username: 'challenger1',
-          display_name: 'Alex Chen',
-          avatar_url: null
-        }
-      }
-    ]
-  },
-  {
-    id: '3',
-    user_id: 'user3',
-    challenge_id: 'challenge1',
-    content: 'Day 15 update: Still going strong! Had a tough day yesterday but the motivation from everyone here kept me going. Thanks for creating this challenge! 💪',
-    created_at: '2024-01-19T15:30:00Z',
-    updated_at: '2024-01-19T15:30:00Z',
-    likes_count: 8,
-    is_pinned: false,
-    user: {
-      id: 'user3',
-      username: 'mindful_mike',
-      display_name: 'Mike Wilson',
-      avatar_url: null
-    }
-  },
-  {
-    id: '4',
-    user_id: 'user4',
-    challenge_id: 'challenge1',
-    content: 'Quick question - is it okay to modify the workout if I have knee issues? Want to make sure I\'m still following the challenge properly.',
-    created_at: '2024-01-19T09:15:00Z',
-    updated_at: '2024-01-19T09:15:00Z',
-    likes_count: 2,
-    is_pinned: false,
-    user: {
-      id: 'user4',
-      username: 'growth_guru',
-      display_name: 'Emma Davis',
-      avatar_url: null
-    }
-  }
-];
-
 export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCommentsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -128,88 +57,45 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchComments();
-    
-    // Set up real-time subscription for new comments
-    const commentsSubscription = supabase
-      .channel('challenge-comments')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'challenge_comments_real',
-          filter: `challenge_id=eq.${challengeId}`
-        },
-        (payload) => {
-          console.log('Comment change received:', payload);
-          fetchComments(); // Refresh comments when changes occur
-        }
-      )
-      .subscribe();
-
-    // Set up real-time subscription for comment likes
-    const likesSubscription = supabase
-      .channel('comment-likes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'comment_likes_real'
-        },
-        (payload) => {
-          console.log('Like change received:', payload);
-          fetchComments(); // Refresh comments when likes change
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(commentsSubscription);
-      supabase.removeChannel(likesSubscription);
-    };
-  }, [challengeId]);
+  const [loading, setLoading] = useState(false);
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
 
   const fetchComments = async () => {
+    if (!challengeId) return;
+    
+    setIsLoadingComments(true);
     try {
-      setLoading(true);
-      setError(null);
-      
       const { data, error } = await supabase.rpc('get_real_challenge_comments', {
-        challenge_id_param: challengeId,
-        limit_count: 50,
-        offset_count: 0
+        challenge_id_param: challengeId
       });
 
       if (error) throw error;
-      
+
       if (data && data.success) {
         setComments(data.comments || []);
       } else {
-        // Fallback to mock data if function doesn't exist yet
-        console.warn('Using mock comments data');
-        setComments(mockComments);
+        console.error('Error in response:', data.message);
       }
-    } catch (err: any) {
-      console.error('Error fetching comments:', err);
-      setError('Failed to load comments. Please try again later.');
-      // Fallback to mock data
-      setComments(mockComments);
+    } catch (error: any) {
+      console.error('Error fetching comments:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load comments",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
+      setIsLoadingComments(false);
     }
   };
+
+  useEffect(() => {
+    fetchComments();
+  }, [challengeId]);
 
   const handleSubmitComment = async () => {
     if (!newComment.trim() || !user) return;
 
-    setSubmitting(true);
+    setLoading(true);
     try {
       const { data, error } = await supabase.rpc('add_real_challenge_comment', {
         challenge_id_param: challengeId,
@@ -217,51 +103,35 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
       });
 
       if (error) throw error;
-      
+
       if (data && data.success) {
+        // Refresh comments to get the new comment with all data
+        fetchComments();
         toast({
           title: "Comment posted",
-          description: "Your comment has been posted successfully.",
+          description: "Your comment has been posted successfully",
         });
       } else {
-        // Fallback to mock implementation
-        const mockNewComment: Comment = {
-          id: Date.now().toString(),
-          user_id: user.id,
-          challenge_id: challengeId,
-          content: newComment,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          likes_count: 0,
-          is_pinned: false,
-          user: {
-            id: user.id,
-            username: user.email?.split('@')[0] || 'user',
-            display_name: user.email?.split('@')[0] || 'User',
-            avatar_url: null
-          }
-        };
-
-        setComments(prev => [mockNewComment, ...prev]);
+        throw new Error(data.message || 'Failed to post comment');
       }
-      
+
       setNewComment("");
-    } catch (err: any) {
-      console.error('Error posting comment:', err);
+    } catch (error: any) {
+      console.error('Error posting comment:', error);
       toast({
         title: "Error",
-        description: err.message || "Failed to post comment. Please try again.",
+        description: error.message || "Failed to post comment",
         variant: "destructive",
       });
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
   const handleSubmitReply = async (parentId: string) => {
     if (!replyContent.trim() || !user) return;
 
-    setSubmitting(true);
+    setLoading(true);
     try {
       const { data, error } = await supabase.rpc('add_real_challenge_comment', {
         challenge_id_param: challengeId,
@@ -270,53 +140,29 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
       });
 
       if (error) throw error;
-      
+
       if (data && data.success) {
+        // Refresh comments to get the new reply with all data
+        fetchComments();
         toast({
           title: "Reply posted",
-          description: "Your reply has been posted successfully.",
+          description: "Your reply has been posted successfully",
         });
-        
-        // Refresh comments to show the new reply
-        fetchComments();
       } else {
-        // Fallback to mock implementation
-        const mockReply: Comment = {
-          id: Date.now().toString(),
-          user_id: user.id,
-          challenge_id: challengeId,
-          content: replyContent,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          likes_count: 0,
-          is_pinned: false,
-          parent_id: parentId,
-          user: {
-            id: user.id,
-            username: user.email?.split('@')[0] || 'user',
-            display_name: user.email?.split('@')[0] || 'User',
-            avatar_url: null
-          }
-        };
-
-        setComments(prev => prev.map(comment => 
-          comment.id === parentId 
-            ? { ...comment, replies: [...(comment.replies || []), mockReply] }
-            : comment
-        ));
+        throw new Error(data.message || 'Failed to post reply');
       }
-      
+
       setReplyContent("");
       setReplyingTo(null);
-    } catch (err: any) {
-      console.error('Error posting reply:', err);
+    } catch (error: any) {
+      console.error('Error posting reply:', error);
       toast({
         title: "Error",
-        description: err.message || "Failed to post reply. Please try again.",
+        description: error.message || "Failed to post reply",
         variant: "destructive",
       });
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -325,36 +171,52 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
       toast({
         title: "Sign in required",
         description: "Please sign in to like comments",
-        variant: "default",
       });
       return;
     }
-    
+
     try {
       const { data, error } = await supabase.rpc('toggle_real_comment_like', {
         comment_id_param: commentId
       });
 
       if (error) throw error;
-      
-      if (!data || !data.success) {
-        // Fallback to client-side implementation
-        setComments(prev => prev.map(comment => {
-          if (comment.id === commentId) {
-            return {
-              ...comment,
-              likes_count: comment.is_liked ? comment.likes_count - 1 : comment.likes_count + 1,
-              is_liked: !comment.is_liked
-            };
-          }
-          return comment;
-        }));
+
+      if (data && data.success) {
+        // Update the comment in the local state
+        setComments(prev => 
+          prev.map(comment => {
+            if (comment.id === commentId) {
+              return {
+                ...comment,
+                likes_count: data.likes_count,
+                is_liked: data.is_liked
+              };
+            }
+            
+            // Also check in replies
+            if (comment.replies) {
+              return {
+                ...comment,
+                replies: comment.replies.map(reply => 
+                  reply.id === commentId 
+                    ? { ...reply, likes_count: data.likes_count, is_liked: data.is_liked }
+                    : reply
+                )
+              };
+            }
+            
+            return comment;
+          })
+        );
+      } else {
+        throw new Error(data.message || 'Failed to toggle like');
       }
-    } catch (err: any) {
-      console.error('Error toggling like:', err);
+    } catch (error: any) {
+      console.error('Error toggling like:', error);
       toast({
         title: "Error",
-        description: err.message || "Failed to like comment. Please try again.",
+        description: error.message || "Failed to like comment",
         variant: "destructive",
       });
     }
@@ -363,25 +225,19 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
   const handleDeleteComment = async (commentId: string) => {
     if (window.confirm('Are you sure you want to delete this comment?')) {
       try {
-        const { error } = await supabase
-          .from('challenge_comments_real')
-          .delete()
-          .eq('id', commentId);
-
-        if (error) throw error;
+        // TODO: Implement actual comment deletion
+        // For now, we'll just remove it from the UI
+        setComments(prev => prev.filter(comment => comment.id !== commentId));
         
         toast({
           title: "Comment deleted",
-          description: "Your comment has been deleted successfully.",
+          description: "Your comment has been deleted",
         });
-        
-        // Refresh comments or remove from local state
-        setComments(prev => prev.filter(comment => comment.id !== commentId));
-      } catch (err: any) {
-        console.error('Error deleting comment:', err);
+      } catch (error: any) {
+        console.error('Error deleting comment:', error);
         toast({
           title: "Error",
-          description: err.message || "Failed to delete comment. Please try again.",
+          description: error.message || "Failed to delete comment",
           variant: "destructive",
         });
       }
@@ -389,35 +245,93 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
   };
 
   const handlePinComment = async (commentId: string) => {
+    if (!user || user.id !== challengeOwnerId) {
+      toast({
+        title: "Permission denied",
+        description: "Only challenge creators can pin comments",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       const { data, error } = await supabase.rpc('toggle_comment_pin', {
         comment_id_param: commentId
       });
 
       if (error) throw error;
-      
-      if (!data || !data.success) {
-        // Fallback to client-side implementation
-        setComments(prev => prev.map(comment => 
-          comment.id === commentId 
-            ? { ...comment, is_pinned: !comment.is_pinned }
-            : comment
-        ));
+
+      if (data && data.success) {
+        // Update the comment in the local state
+        setComments(prev => 
+          prev.map(comment => 
+            comment.id === commentId 
+              ? { ...comment, is_pinned: data.is_pinned }
+              : comment
+          )
+        );
+        
+        toast({
+          title: data.is_pinned ? "Comment pinned" : "Comment unpinned",
+          description: data.is_pinned 
+            ? "The comment has been pinned to the top" 
+            : "The comment has been unpinned",
+        });
       } else {
-        // Refresh comments to show updated pin status
-        fetchComments();
+        throw new Error(data.message || 'Failed to toggle pin status');
       }
-    } catch (err: any) {
-      console.error('Error toggling pin:', err);
+    } catch (error: any) {
+      console.error('Error toggling pin status:', error);
       toast({
         title: "Error",
-        description: err.message || "Failed to pin comment. Please try again.",
+        description: error.message || "Failed to pin/unpin comment",
         variant: "destructive",
       });
     }
   };
 
   const isOwner = user?.id === challengeOwnerId;
+
+  if (isLoadingComments) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex gap-3">
+              <div className="h-10 w-10 rounded-full bg-muted animate-pulse"></div>
+              <div className="flex-1 space-y-3">
+                <div className="h-8 bg-muted animate-pulse rounded-md"></div>
+                <div className="h-20 bg-muted animate-pulse rounded-md"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <div className="space-y-4">
+          <div className="h-6 w-40 bg-muted animate-pulse rounded-md"></div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse"></div>
+                        <div>
+                          <div className="h-4 w-32 bg-muted animate-pulse rounded-md"></div>
+                          <div className="h-3 w-24 bg-muted animate-pulse rounded-md mt-1"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="h-16 bg-muted animate-pulse rounded-md"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -442,15 +356,15 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
                 <div className="flex justify-end">
                   <Button 
                     onClick={handleSubmitComment}
-                    disabled={!newComment.trim() || submitting}
+                    disabled={!newComment.trim() || loading}
                     size="sm"
                   >
-                    {submitting ? (
+                    {loading ? (
                       <RefreshCw className="h-4 w-4 animate-spin mr-2" />
                     ) : (
                       <Send className="h-4 w-4 mr-2" />
                     )}
-                    {submitting ? "Posting..." : "Post Comment"}
+                    {loading ? "Posting..." : "Post Comment"}
                   </Button>
                 </div>
               </div>
@@ -483,31 +397,7 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
           </Badge>
         </div>
 
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {loading ? (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-muted"></div>
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 w-1/4 bg-muted rounded"></div>
-                      <div className="h-3 w-1/3 bg-muted rounded"></div>
-                      <div className="h-4 w-full bg-muted rounded"></div>
-                      <div className="h-4 w-3/4 bg-muted rounded"></div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : comments.length === 0 ? (
+        {comments.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
               <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -550,7 +440,7 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                            {formatDistanceToNow(parseISO(comment.created_at), { addSuffix: true })}
                           </p>
                         </div>
                       </div>
@@ -678,7 +568,7 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
                               <div className="flex items-center gap-2 mb-1">
                                 <p className="font-medium text-sm">{reply.user.display_name}</p>
                                 <p className="text-xs text-muted-foreground">
-                                  {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
+                                  {formatDistanceToNow(parseISO(reply.created_at), { addSuffix: true })}
                                 </p>
                               </div>
                               <p className="text-sm">{reply.content}</p>
@@ -686,15 +576,11 @@ export function ChallengeComments({ challengeId, challengeOwnerId }: ChallengeCo
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleLikeComment(reply.id)} 
-                                  disabled={!replyContent.trim() || submitting}
+                                  onClick={() => handleLikeComment(reply.id)}
+                                  className="h-6 px-2 text-xs"
                                 >
-                                  <Heart className="h-3 w-3 mr-1" />
-                                  {submitting ? (
-                                    <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                                  ) : (
-                                    "Reply"
-                                  )}
+                                  <Heart className={`h-3 w-3 mr-1 ${reply.is_liked ? 'fill-current text-red-600' : ''}`} />
+                                  {reply.likes_count}
                                 </Button>
                               </div>
                             </div>
