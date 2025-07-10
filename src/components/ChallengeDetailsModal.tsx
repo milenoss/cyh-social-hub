@@ -434,6 +434,7 @@ export function ChallengeDetailsModal({ challenge, open, onOpenChange, onJoin }:
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Started: {new Date(participation.started_at!).toLocaleDateString()}</span>
                         <span>Status: {participation.status}</span>
+                      </div>
                       <Progress value={challenge.average_progress || 0} />
                     </div>
                   </CardContent>
