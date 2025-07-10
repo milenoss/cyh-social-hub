@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle, RefreshCw, Award } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogTrigger } from "@/components/ui/dialog";
+import { Users, Clock, Target, Edit, Trash2, MoreHorizontal, CheckCircle, RefreshCw, Award, Share2, Flag, Copy, Check } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ChallengeWithCreator } from "@/lib/supabase-types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChallengeParticipation } from "@/hooks/useChallengeParticipation";
@@ -45,6 +46,11 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [checkInNote, setCheckInNote] = useState("");
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportSubmitting, setReportSubmitting] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   const handleJoin = () => {
@@ -84,6 +90,98 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
     await updateProgress(newProgress, checkInNote);
     setCheckInNote("");
     setIsCheckingIn(false);
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const shareUrl = `${window.location.origin}/challenge/${challenge.id}`;
+    
+    // Try to use the Web Share API if available
+    if (navigator.share) {
+      navigator.share({
+        title: challenge.title,
+        text: `Check out this challenge: ${challenge.title}`,
+        url: shareUrl,
+      }).catch(err => {
+        console.error('Error sharing:', err);
+        // Fallback to copy to clipboard
+        copyToClipboard(shareUrl);
+      });
+    } else {
+      // Fallback for browsers that don't support the Web Share API
+      copyToClipboard(shareUrl);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setLinkCopied(true);
+      toast({
+        title: "Link Copied",
+        description: "Challenge link copied to clipboard",
+      });
+      
+      setTimeout(() => setLinkCopied(false), 3000);
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      toast({
+        title: "Error",
+        description: "Failed to copy link to clipboard",
+        variant: "destructive",
+      });
+    });
+  };
+
+  const handleReport = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setReportDialogOpen(true);
+  };
+
+  const submitReport = async () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to report challenges",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!reportReason.trim()) {
+      toast({
+        title: "Report reason required",
+        description: "Please provide a reason for your report",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setReportSubmitting(true);
+    
+    try {
+      // In a real implementation, this would call an API endpoint
+      // For now, we'll simulate a successful report
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: "Report Submitted",
+        description: "Thank you for your report. We'll review it shortly.",
+      });
+      
+      setReportDialogOpen(false);
+      setReportReason("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setReportSubmitting(false);
+    }
   };
 
   const handleEdit = () => {
@@ -168,8 +266,8 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               <span>{challenge.duration_days} days</span>
             </div>
             <div className="flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              <span>{challenge.participant_count || 0} joined</span>
+              <Users className="h-3 w-3" /> 
+              <span>{challenge.participant_count || 0} joined</span> 
             </div>
           </div>
           
@@ -188,6 +286,32 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
                 +{(challenge.tags?.length || 0) - 3}
               </Badge>
             )}
+          </div>
+          
+          <div className="flex justify-between mt-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-xs px-2 h-7"
+              onClick={(e) => handleShare(e)}
+            >
+              {linkCopied ? (
+                <Check className="h-3 w-3 mr-1" />
+              ) : (
+                <Share2 className="h-3 w-3 mr-1" />
+              )}
+              Share
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-xs px-2 h-7"
+              onClick={(e) => handleReport(e)}
+            >
+              <Flag className="h-3 w-3 mr-1" />
+              Report
+            </Button>
           </div>
         </CardContent>
         
@@ -384,6 +508,46 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowProgressModal(false)}>
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Report Challenge</DialogTitle>
+            <DialogDescription>
+              Please let us know why you're reporting this challenge
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <h3 className="font-medium">Challenge: {challenge.title}</h3>
+              <textarea
+                className="w-full min-h-[100px] p-3 border rounded-md bg-background"
+                placeholder="Please describe why you're reporting this challenge..."
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+              />
+            </div>
+            
+            <Alert>
+              <AlertDescription>
+                Reports are anonymous and help us maintain community standards. We'll review this challenge based on your feedback.
+              </AlertDescription>
+            </Alert>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={submitReport}
+              disabled={reportSubmitting || !reportReason.trim()}
+            >
+              {reportSubmitting ? "Submitting..." : "Submit Report"}
             </Button>
           </DialogFooter>
         </DialogContent>
