@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MessageSquare, RefreshCw, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface FeedbackFormProps {
@@ -33,23 +34,54 @@ export function FeedbackForm({ trigger, challengeId, challengeTitle }: FeedbackF
     setLoading(true);
 
     try {
-      // In a real implementation, this would call an API endpoint
-      // For now, we'll simulate sending an email
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // First try to use the RPC function
+      let success = false;
+      try {
+        const { data, error } = await supabase.rpc('send_feedback', {
+          p_type: formData.type,
+          p_subject: formData.subject,
+          p_message: formData.message,
+          p_email: formData.email,
+          p_challenge_id: challengeId || null,
+          p_challenge_title: challengeTitle || null
+        });
+        
+        if (error) throw error;
+        success = data.success;
+      } catch (rpcError) {
+        console.warn('RPC function not available, falling back to edge function:', rpcError);
+        
+        // Fall back to edge function
+        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-feedback`;
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            type: formData.type,
+            subject: formData.subject,
+            message: formData.message,
+            email: formData.email,
+            userId: user?.id,
+            challengeId,
+            challengeTitle
+          })
+        });
+        
+        const result = await response.json();
+        success = result.success;
+      }
       
-      // Log the feedback data that would be sent
-      console.log("Feedback would be sent to: chooseyourharduk@gmail.com");
-      console.log("Feedback data:", {
-        ...formData,
-        userId: user?.id || "anonymous",
-        challengeId,
-        challengeTitle,
-        timestamp: new Date().toISOString(),
-      });
+      if (!success) {
+        throw new Error("Failed to submit feedback");
+      }
       
       toast({
         title: "Feedback Submitted",
-        description: "Thank you for your feedback! We'll review it shortly.",
+        description: "Thank you for your feedback! We'll review it shortly. A copy has been sent to chooseyourharduk@gmail.com",
       });
       
       // Reset form and close dialog
@@ -149,7 +181,7 @@ export function FeedbackForm({ trigger, challengeId, challengeTitle }: FeedbackF
           
           <Alert>
             <AlertDescription>
-              Your feedback will be sent to our team at chooseyourharduk@gmail.com and helps us improve the platform.
+              Your feedback will be sent to our team at <a href="mailto:chooseyourharduk@gmail.com" className="text-primary hover:underline">chooseyourharduk@gmail.com</a> and helps us improve the platform.
             </AlertDescription>
           </Alert>
           
