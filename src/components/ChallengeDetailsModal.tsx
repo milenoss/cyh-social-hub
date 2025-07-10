@@ -32,7 +32,6 @@ import {
 import { ChallengeWithCreator } from "@/lib/supabase-types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 import { format } from "date-fns";
 
 interface ChallengeDetailsModalProps {
