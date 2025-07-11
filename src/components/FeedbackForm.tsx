@@ -32,56 +32,40 @@ export function FeedbackForm({ trigger, challengeId, challengeTitle }: FeedbackF
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
+    const feedbackData = {
+      type: formData.type,
+      subject: formData.subject,
+      message: formData.message,
+      email: formData.email,
+      challengeId: challengeId || null,
+      challengeTitle: challengeTitle || null,
+      userId: user?.id || null,
+      userEmail: user?.email || null
+    };
 
     try {
-      // First try to use the RPC function
-      let success = false;
-      try {
-        const { data, error } = await supabase.rpc('send_feedback', {
-          p_type: formData.type,
-          p_subject: formData.subject,
-          p_message: formData.message,
-          p_email: formData.email,
-          p_challenge_id: challengeId || null,
-          p_challenge_title: challengeTitle || null
-        });
-        
-        if (error) throw error;
-        success = data.success;
-      } catch (rpcError) {
-        console.warn('RPC function not available, falling back to edge function:', rpcError);
-        
-        // Fall back to edge function
-        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-feedback`;
-        
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({
-            type: formData.type,
-            subject: formData.subject,
-            message: formData.message,
-            email: formData.email,
-            userId: user?.id,
-            challengeId,
-            challengeTitle
-          })
-        });
-        
-        const result = await response.json();
-        success = result.success;
-      }
+      // Use the edge function directly
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-feedback`;
       
-      if (!success) {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify(feedbackData)
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
         throw new Error("Failed to submit feedback");
       }
       
       toast({
         title: "Feedback Submitted",
-        description: "Thank you for your feedback! We'll review it shortly. A copy has been sent to chooseyourharduk@gmail.com",
+        description: "Thank you for your feedback! We'll review it shortly. A confirmation email has been sent.",
       });
       
       // Reset form and close dialog
