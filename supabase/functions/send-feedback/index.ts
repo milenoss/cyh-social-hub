@@ -73,7 +73,7 @@ serve(async (req: Request) => {
       const campaignResponse = await mailchimp.campaigns.create({
         type: "regular",
         recipients: {
-          list_id: "your-audience-list-id", // You'll need to replace this with your actual list ID
+          list_id: "1a0bb6c781", // Mailchimp audience ID
           segment_opts: {
             match: "all",
             conditions: [{
