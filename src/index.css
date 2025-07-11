@@ -166,13 +166,13 @@ All colors MUST be HSL.
   /* Mobile optimizations */
   @media (max-width: 768px) {
     .container {
-      @apply px-2;
+      @apply px-1;
     }
     
     /* Improve touch targets */
     button, a, [role="button"] {
-      min-height: 36px;
-      min-width: 36px;
+      min-height: 32px;
+      min-width: 32px;
     }
     
     /* Better text readability on mobile */
@@ -188,7 +188,7 @@ All colors MUST be HSL.
     
     /* Improve card layouts on mobile */
     .card {
-      @apply px-3 py-4;
+      @apply px-2 py-3;
     }
     
     /* Adjust grid layouts for mobile */
@@ -201,6 +201,46 @@ All colors MUST be HSL.
     /* Fix navigation spacing */
     .h-16 {
       @apply h-14;
+    }
+    
+    /* Adjust font sizes for mobile */
+    .text-lg {
+      @apply text-base;
+    }
+    
+    .text-xl {
+      @apply text-lg;
+    }
+    
+    .text-2xl {
+      @apply text-xl;
+    }
+    
+    .text-3xl {
+      @apply text-2xl;
+    }
+    
+    /* Fix dialog content on mobile */
+    .max-w-4xl {
+      @apply max-w-[95vw];
+    }
+    
+    /* Improve spacing in mobile layouts */
+    .p-6 {
+      @apply p-3;
+    }
+    
+    .gap-4 {
+      @apply gap-2;
+    }
+    
+    .space-y-6 {
+      @apply space-y-3;
+    }
+    
+    /* Fix mobile navigation */
+    .fixed.top-0 {
+      @apply w-full;
     }
   }
 

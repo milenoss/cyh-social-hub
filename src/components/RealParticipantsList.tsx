@@ -83,41 +83,85 @@ export function RealParticipantsList({
       setLoading(true);
       setError(null);
       
-      const { data, error } = await supabase.rpc('get_real_challenge_participants', {
-        challenge_id_param: challengeId
-      });
+      // First try to get participants with the RPC function
+      try {
+        const { data, error } = await supabase.rpc('get_real_challenge_participants', {
+          challenge_id_param: challengeId
+        });
 
+        if (error) throw error;
+        
+        if (data && data.success) {
+          setParticipants(data.participants || []);
+          setStats({
+            total: data.total_count || 0,
+            completed: data.completed_count || 0,
+            active: data.active_count || 0
+          });
+          return;
+        }
+      } catch (rpcError) {
+        console.warn('RPC function not available, falling back to direct query:', rpcError);
+      }
+      
+      // Fallback to direct query if RPC fails
+      const { data, error } = await supabase
+        .from('challenge_participants')
+        .select(`
+          *,
+          profiles:user_id(
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('challenge_id', challengeId);
+        
       if (error) throw error;
       
-      if (data && data.success) {
-        setParticipants(data.participants || []);
+      if (data) {
+        // Transform the data to match the expected format
+        const transformedData = data.map(participant => ({
+          id: participant.id,
+          user_id: participant.user_id,
+          username: participant.profiles?.username || `user_${participant.user_id.substring(0, 8)}`,
+          display_name: participant.profiles?.display_name || participant.profiles?.username || 'Anonymous User',
+          avatar_url: participant.profiles?.avatar_url,
+          progress: participant.progress || 0,
+          status: participant.status,
+          joined_at: participant.started_at || participant.created_at,
+          last_check_in: participant.last_check_in,
+          check_in_streak: participant.check_in_streak || 0
+        }));
+        
+        setParticipants(transformedData);
         setStats({
-          total: data.total_count || 0,
-          completed: data.completed_count || 0,
-          active: data.active_count || 0
-        });
-      } else {
-        // Fallback to mock data if function doesn't exist yet
-        console.warn('Using mock participants data');
-        const mockParticipants = [
-          { id: '1', user_id: '1', username: 'challenger1', display_name: 'Alex Chen', avatar_url: null, progress: 85, status: 'active', joined_at: '2024-01-15', last_check_in: new Date().toISOString(), check_in_streak: 5 },
-          { id: '2', user_id: '2', username: 'fitnessfan', display_name: 'Sarah Johnson', avatar_url: null, progress: 92, status: 'active', joined_at: '2024-01-14', last_check_in: new Date().toISOString(), check_in_streak: 7 },
-          { id: '3', user_id: '3', username: 'mindful_mike', display_name: 'Mike Wilson', avatar_url: null, progress: 100, status: 'completed', joined_at: '2024-01-10', last_check_in: new Date().toISOString(), check_in_streak: 10 },
-          { id: '4', user_id: '4', username: 'growth_guru', display_name: 'Emma Davis', avatar_url: null, progress: 67, status: 'active', joined_at: '2024-01-16', last_check_in: new Date().toISOString(), check_in_streak: 3 },
-        ];
-        setParticipants(mockParticipants);
-        setStats({
-          total: mockParticipants.length,
-          completed: mockParticipants.filter(p => p.status === 'completed').length,
-          active: mockParticipants.filter(p => p.status === 'active').length
+          total: transformedData.length,
+          completed: transformedData.filter(p => p.status === 'completed').length,
+          active: transformedData.filter(p => p.status === 'active').length
         });
       }
     } catch (err: any) {
       console.error('Error fetching participants:', err);
       setError('Failed to load participants. Please try again later.');
       
-      // Fallback to empty state
-      setParticipants([]);
+      // Fallback to mock data for development
+      const mockParticipants = [
+        { id: '1', user_id: '1', username: 'challenger1', display_name: 'Alex Chen', avatar_url: null, progress: 85, status: 'active', joined_at: '2024-01-15', last_check_in: new Date().toISOString(), check_in_streak: 5 },
+        { id: '2', user_id: '2', username: 'fitnessfan', display_name: 'Sarah Johnson', avatar_url: null, progress: 92, status: 'active', joined_at: '2024-01-14', last_check_in: new Date().toISOString(), check_in_streak: 7 },
+        { id: '3', user_id: '3', username: 'mindful_mike', display_name: 'Mike Wilson', avatar_url: null, progress: 100, status: 'completed', joined_at: '2024-01-10', last_check_in: new Date().toISOString(), check_in_streak: 10 },
+        { id: '4', user_id: '4', username: 'growth_guru', display_name: 'Emma Davis', avatar_url: null, progress: 67, status: 'active', joined_at: '2024-01-16', last_check_in: new Date().toISOString(), check_in_streak: 3 },
+      ];
+      
+      if (import.meta.env.DEV) {
+        setParticipants(mockParticipants);
+        setStats({
+          total: mockParticipants.length,
+          completed: mockParticipants.filter(p => p.status === 'completed').length,
+          active: mockParticipants.filter(p => p.status === 'active').length
+        });
+        setError(null); // Clear error in dev mode when using mock data
+      }
     } finally {
       setLoading(false);
     }

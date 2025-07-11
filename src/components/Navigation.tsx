@@ -34,15 +34,15 @@ export function Navigation() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b shadow-sm overflow-x-hidden">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-14 md:h-16">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b shadow-sm overflow-x-hidden w-full">
+      <div className="container mx-auto px-2 md:px-4">
+        <div className="flex items-center justify-between h-12 md:h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="p-1.5 md:p-2 bg-gradient-motivation rounded-lg">
-              <Target className="h-4 w-4 md:h-5 md:w-5 text-white" />
+            <div className="p-1 md:p-2 bg-gradient-motivation rounded-lg">
+              <Target className="h-3.5 w-3.5 md:h-5 md:w-5 text-white" />
             </div>
-            <span className="text-lg md:text-xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+            <span className="text-base md:text-xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
               Choose Your Hard
             </span>
           </Link>
@@ -68,7 +68,7 @@ export function Navigation() {
           </div>
 
           {/* User Actions */}
-          <div className="flex items-center space-x-1 md:space-x-3">
+          <div className="flex items-center space-x-0.5 md:space-x-3">
             {/* Theme Toggle */}
             <div className="flex items-center gap-2">
               <ThemeToggle />
@@ -95,8 +95,8 @@ export function Navigation() {
                 {/* Profile Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-1 md:gap-2 p-1 md:p-2">
-                      <Avatar className="h-6 w-6">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-1 md:gap-2 p-0.5 md:p-2">
+                      <Avatar className="h-5 w-5 md:h-6 md:w-6">
                         <AvatarImage src={profile?.avatar_url || ""} />
                         <AvatarFallback className="text-xs">
                           {profile?.display_name?.[0] || profile?.username?.[0] || user.email?.[0]?.toUpperCase()}
@@ -200,14 +200,14 @@ export function Navigation() {
                 </DropdownMenu>
                 
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4 sm:mr-2" />
+                  <LogOut className="h-3.5 w-3.5 sm:mr-2" />
                   <span className="hidden sm:inline ml-2">Sign Out</span>
                 </Button>
               </>
             ) : (
-              <Button variant="hero" size="sm" asChild className="px-2 sm:px-3">
+              <Button variant="hero" size="sm" asChild className="px-1.5 sm:px-3">
                 <Link to="/auth">
-                  <User className="h-4 w-4" />
+                  <User className="h-3.5 w-3.5" />
                   <span className="ml-2">Sign In</span>
                 </Link>
               </Button>
