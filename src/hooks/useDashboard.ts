@@ -31,6 +31,7 @@ export function useDashboard() {
   const fetchUserChallenges = async () => {
     if (!user) return;
 
+    console.log('Fetching user challenges for user:', user.id);
     try {
       const { data, error } = await supabase
         .from('challenges')
@@ -50,10 +51,10 @@ export function useDashboard() {
       if (error) throw error;
 
       // Transform the data to include participant count
-      const transformedData = data?.map(challenge => ({
+      const transformedData = data ? data.map(challenge => ({
         ...challenge,
         participant_count: challenge.challenge_participants?.[0]?.count || 0
-      })) || [];
+      })) : [];
 
       setUserChallenges(transformedData);
     } catch (error: any) {
@@ -69,6 +70,7 @@ export function useDashboard() {
   const fetchParticipatedChallenges = async () => {
     if (!user) return;
 
+    console.log('Fetching participated challenges for user:', user.id);
     try {
       const { data, error } = await supabase
         .from('challenge_participants')
@@ -88,7 +90,7 @@ export function useDashboard() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setParticipatedChallenges(data || []);
+      setParticipatedChallenges(data ? data : []);
     } catch (error: any) {
       console.error('Error fetching participated challenges:', error);
       toast({
@@ -102,8 +104,8 @@ export function useDashboard() {
   const calculateStats = () => {
     if (!profile || !participatedChallenges) return;
 
-    const completed = participatedChallenges.filter(p => p.status === 'completed').length;
-    const active = participatedChallenges.filter(p => p.status === 'active').length;
+    const completed = participatedChallenges ? participatedChallenges.filter(p => p.status === 'completed').length : 0;
+    const active = participatedChallenges ? participatedChallenges.filter(p => p.status === 'active').length : 0;
     
     setStats({
       challengesCompleted: completed,

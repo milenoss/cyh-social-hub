@@ -25,7 +25,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Clear any corrupted session data on initialization
     const clearCorruptedSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
+        const session = data?.session;
         if (error && error.message.includes('Invalid Refresh Token')) {
           console.warn('Clearing corrupted session data');
           await supabase.auth.signOut();
@@ -62,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // THEN check for existing session with error handling
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        console.warn('Session retrieval error:', error);
+        console.error('Session retrieval error:', error);
         if (error.message.includes('Invalid Refresh Token')) {
           clearCorruptedSession();
         }
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     }).catch(async (error) => {
       console.error('Failed to get session:', error);
-      if (error.message.includes('Invalid Refresh Token')) {
+      if (error.message && error.message.includes('Invalid Refresh Token')) {
         await clearCorruptedSession();
       }
       setLoading(false);

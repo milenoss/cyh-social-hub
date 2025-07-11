@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +32,9 @@ import { AccountDeletionFlow } from "@/components/AccountDeletionFlow";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { EmailVerificationGuard } from "@/components/EmailVerificationGuard";
+import { Navigation } from "@/components/Navigation";
 
 // Check for social login redirect
 const checkForSocialLoginRedirect = () => {
@@ -76,7 +75,7 @@ export default function Dashboard() {
   const [isSocialLoginRedirect, setIsSocialLoginRedirect] = useState(false);
 
   // Handle tab switching from URL params
-  const [activeTab, setActiveTab] = useState("active");
+  const [activeTab, setActiveTab] = useState<string>("active");
   
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -109,8 +108,10 @@ export default function Dashboard() {
   }, [searchParams]);
   
   const handleEditChallenge = (challenge: ChallengeWithCreator) => {
-    setEditingChallenge(challenge);
-    setEditModalOpen(true);
+    if (challenge) {
+      setEditingChallenge(challenge);
+      setEditModalOpen(true);
+    }
   };
 
   const handleDeleteChallenge = async (challengeId: string) => {
@@ -122,7 +123,10 @@ export default function Dashboard() {
   };
 
   const handleProgressUpdate = (progress: number, note?: string) => {
-    return updateProgress(progress, note);
+    if (updateProgress) {
+      return updateProgress(progress, note);
+    }
+    return Promise.resolve(false);
   };
 
   if (authLoading || loading || isSocialLoginRedirect) {
@@ -158,11 +162,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navigation />
       
       <EmailVerificationGuard showWarning={true}>
-        <div className="container mx-auto px-4 py-8 pt-24">
+        <div className="container mx-auto px-4 py-8 pt-24 flex-grow">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-6">
