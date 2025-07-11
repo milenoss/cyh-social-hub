@@ -54,7 +54,7 @@ const checkForSocialLoginRedirect = () => {
   return false;
 };
 
-export default function Dashboard() {
+export function ChallengeDetailsModal() {
   const { user, loading: authLoading, refreshSession } = useAuth();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
