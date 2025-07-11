@@ -39,7 +39,7 @@ serve(async (req: Request) => {
     // Create Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    const mailchimpApiKey = Deno.env.get("MAILCHIMP_API_KEY") || "161ee575fa487a7fc314be2879414e49-us5";
+    const mailchimpApiKey = Deno.env.get("MAILCHIMP_API_KEY") || "";
     const mailchimpServerPrefix = mailchimpApiKey.split('-')[1]; // Extract 'us5' from the API key
     
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
@@ -73,7 +73,7 @@ serve(async (req: Request) => {
       const campaignResponse = await mailchimp.campaigns.create({
         type: "regular",
         recipients: {
-          list_id: "1a0bb6c781", // Mailchimp audience ID
+          list_id: Deno.env.get("MAILCHIMP_AUDIENCE_ID") || "1a0bb6c781", // Mailchimp audience ID
           segment_opts: {
             match: "all",
             conditions: [{
