@@ -214,8 +214,8 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
 
   return (
     <>
-      <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group cursor-pointer">
-        <CardHeader className="pb-3">
+      <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group cursor-pointer overflow-hidden">
+        <CardHeader className="pb-2 md:pb-3 px-3 md:px-6 pt-3 md:pt-6">
           <div className="flex items-start justify-between mb-2">
             <Badge variant="secondary" className="text-xs">
               {challenge.category}
@@ -245,7 +245,7 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               )}
             </div>
           </div>
-          <CardTitle className="text-lg leading-tight group-hover:text-primary transition-colors">
+          <CardTitle className="text-base md:text-lg leading-tight group-hover:text-primary transition-colors line-clamp-2">
             {challenge.title}
           </CardTitle>
           {challenge.creator && (
@@ -255,12 +255,12 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
           )}
         </CardHeader>
         
-        <CardContent className="pb-4">
-          <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
+        <CardContent className="pb-3 md:pb-4 px-3 md:px-6">
+          <p className="text-muted-foreground text-xs md:text-sm mb-2 md:mb-4 line-clamp-2 md:line-clamp-3">
             {challenge.description}
           </p>
           
-          <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+          <div className="flex items-center gap-2 md:gap-4 text-xs text-muted-foreground mb-2 md:mb-3">
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
               <span>{challenge.duration_days} days</span>
@@ -271,12 +271,12 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1 mb-2">
             {challenge.tags?.slice(0, 3).map((tag) => (
               <Badge 
                 key={tag} 
                 variant="outline" 
-                className="text-xs px-2 py-0"
+                className="text-xs px-1.5 md:px-2 py-0 text-[10px] md:text-xs"
               >
                 {tag}
               </Badge>
@@ -288,11 +288,11 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
             )}
           </div>
           
-          <div className="flex justify-between mt-2">
+          <div className="flex justify-between mt-1 md:mt-2">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-xs px-2 h-7"
+              className="text-xs px-1 md:px-2 h-6 md:h-7"
               onClick={(e) => handleShare(e)}
             >
               {linkCopied ? (
@@ -300,25 +300,25 @@ export function ChallengeCard({ challenge, onJoin, onEdit, onDelete }: Challenge
               ) : (
                 <Share2 className="h-3 w-3 mr-1" />
               )}
-              Share
+              <span className="hidden sm:inline">Share</span>
             </Button>
             
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-xs px-2 h-7"
+              className="text-xs px-1 md:px-2 h-6 md:h-7"
               onClick={(e) => handleReport(e)}
             >
               <Flag className="h-3 w-3 mr-1" />
-              Report
+              <span className="hidden sm:inline">Report</span>
             </Button>
           </div>
         </CardContent>
         
-        <CardFooter className="pt-0">
+        <CardFooter className="pt-0 px-3 md:px-6 pb-3 md:pb-6">
           {!isOwner && !hasJoined && (
             <Button 
-              className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+              className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all text-xs md:text-sm py-1 md:py-2"
               variant="challenge" 
               onClick={(e) => {
                 e.preventDefault(); // Prevent default action

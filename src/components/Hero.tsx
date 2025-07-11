@@ -7,7 +7,7 @@ export function Hero() {
   const { actualTheme } = useTheme();
 
   return (
-    <section className={`min-h-screen flex items-center justify-center relative overflow-hidden transition-all duration-500 ${
+    <section className={`min-h-[90vh] md:min-h-screen flex items-center justify-center relative overflow-hidden transition-all duration-500 ${
       actualTheme === 'dark' 
         ? 'bg-gradient-to-br from-background via-accent/20 to-primary/5' 
         : 'bg-gradient-to-br from-background via-accent/30 to-primary/10'
@@ -20,25 +20,25 @@ export function Hero() {
       }`}></div>
       
       <div className="container mx-auto px-4 text-center relative z-10">
-        <div className="max-w-4xl mx-auto animate-slide-up">
+        <div className="max-w-4xl mx-auto animate-slide-up pt-10 md:pt-0">
           {/* Main heading */}
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
             Transform Your Life, One Challenge at a Time
           </h1>
           
           {/* Subtitle */}
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-6 md:mb-8 max-w-2xl mx-auto">
             Join our community of achievers and take on challenges that will reshape your habits, boost your productivity, and elevate your lifestyle.
           </p>
           
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button variant="hero" size="xl" className="animate-pulse-glow shadow-lg hover:shadow-xl" asChild>
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mb-8 md:mb-12">
+            <Button variant="hero" size="lg" className="animate-pulse-glow shadow-lg hover:shadow-xl text-base md:text-lg py-2 md:py-3" asChild>
               <Link to="/explore?tab=challenges">
               Start Your Challenge
               </Link>
             </Button>
-            <Button variant="outline" size="xl" className="hover:shadow-md" asChild>
+            <Button variant="outline" size="lg" className="hover:shadow-md text-base md:text-lg py-2 md:py-3" asChild>
               <Link to="/explore?tab=challenges">
               Browse Challenges
               </Link>
@@ -46,15 +46,15 @@ export function Hero() {
           </div>
           
           {/* Stats/Features */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-3xl mx-auto">
             <div className="flex flex-col items-center space-y-2 animate-scale-in" style={{animationDelay: '0.1s'}}>
               <div className={`p-3 rounded-full transition-colors duration-300 ${
                 actualTheme === 'dark' ? 'bg-primary/20' : 'bg-primary/10'
               }`}>
                 <Target className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-sm">Pick Your Path</h3>
-              <p className="text-xs text-muted-foreground">Choose challenges that matter</p>
+              <h3 className="font-semibold text-xs sm:text-sm">Pick Your Path</h3>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Choose challenges that matter</p>
             </div>
             
             <div className="flex flex-col items-center space-y-2 animate-scale-in" style={{animationDelay: '0.2s'}}>
@@ -63,8 +63,8 @@ export function Hero() {
               }`}>
                 <Users className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-sm">Challenge Friends</h3>
-              <p className="text-xs text-muted-foreground">Compete and support each other</p>
+              <h3 className="font-semibold text-xs sm:text-sm">Challenge Friends</h3>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Compete and support each other</p>
             </div>
             
             <div className="flex flex-col items-center space-y-2 animate-scale-in" style={{animationDelay: '0.3s'}}>
@@ -73,8 +73,8 @@ export function Hero() {
               }`}>
                 <TrendingUp className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-sm">Track Progress</h3>
-              <p className="text-xs text-muted-foreground">Visual progress tracking</p>
+              <h3 className="font-semibold text-xs sm:text-sm">Track Progress</h3>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Visual progress tracking</p>
             </div>
             
             <div className="flex flex-col items-center space-y-2 animate-scale-in" style={{animationDelay: '0.4s'}}>
@@ -83,8 +83,8 @@ export function Hero() {
               }`}>
                 <Trophy className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-sm">Celebrate Wins</h3>
-              <p className="text-xs text-muted-foreground">Share your achievements</p>
+              <h3 className="font-semibold text-xs sm:text-sm">Celebrate Wins</h3>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Share your achievements</p>
             </div>
           </div>
         </div>

@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export function Navigation() {
   const { user, signOut } = useAuth();
-  const { profile, stats } = useDashboard();
+  const { profile, stats, loading: dashboardLoading } = useDashboard();
   const { toast } = useToast();
 
   const handleSignOut = async () => {
@@ -34,21 +34,21 @@ export function Navigation() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b shadow-sm overflow-x-hidden">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="p-2 bg-gradient-motivation rounded-lg">
-              <Target className="h-5 w-5 text-white" />
+            <div className="p-1.5 md:p-2 bg-gradient-motivation rounded-lg">
+              <Target className="h-4 w-4 md:h-5 md:w-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+            <span className="text-lg md:text-xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
               Choose Your Hard
             </span>
           </Link>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-6">
             <Link to="/explore?tab=challenges" className="text-muted-foreground hover:text-primary transition-colors">
               Explore
             </Link>
@@ -68,16 +68,18 @@ export function Navigation() {
           </div>
 
           {/* User Actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-1 md:space-x-3">
             {/* Theme Toggle */}
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <FeedbackDialog />
+              <div className="hidden md:block">
+                <FeedbackDialog />
+              </div>
             </div>
             
             {user ? (
               <>
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
                   <Link to="/dashboard?tab=active">
                   <Trophy className="h-4 w-4" />
                     My Challenges
@@ -93,7 +95,7 @@ export function Navigation() {
                 {/* Profile Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-1 md:gap-2 p-1 md:p-2">
                       <Avatar className="h-6 w-6">
                         <AvatarImage src={profile?.avatar_url || ""} />
                         <AvatarFallback className="text-xs">
@@ -198,12 +200,12 @@ export function Navigation() {
                 </DropdownMenu>
                 
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline ml-2">Sign Out</span>
                 </Button>
               </>
             ) : (
-              <Button variant="hero" size="sm" asChild>
+              <Button variant="hero" size="sm" asChild className="px-2 sm:px-3">
                 <Link to="/auth">
                   <User className="h-4 w-4" />
                   <span className="ml-2">Sign In</span>
