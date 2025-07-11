@@ -39,8 +39,9 @@ serve(async (req: Request) => {
     // Create Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    const mailchimpApiKey = Deno.env.get("MAILCHIMP_API_KEY") || "";
-    const mailchimpServerPrefix = mailchimpApiKey.split('-')[1]; // Extract 'us5' from the API key
+    // Use the provided API key directly for testing
+    const mailchimpApiKey = "ed5c6f0d61049a4fd35a8874164671d1-us5";
+    const mailchimpServerPrefix = "us5"; // Hardcoded for now
     
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
@@ -73,7 +74,7 @@ serve(async (req: Request) => {
       const campaignResponse = await mailchimp.campaigns.create({
         type: "regular",
         recipients: {
-          list_id: Deno.env.get("MAILCHIMP_AUDIENCE_ID") || "1a0bb6c781", // Mailchimp audience ID
+          list_id: "1a0bb6c781", // Hardcoded Mailchimp audience ID
           segment_opts: {
             match: "all",
             conditions: [{
@@ -107,11 +108,11 @@ serve(async (req: Request) => {
       });
       
       // Send the campaign
-      await mailchimp.campaigns.send(campaignResponse.id);
+      const sendResponse = await mailchimp.campaigns.send(campaignResponse.id);
       
-      console.log("Email sent successfully via Mailchimp");
+      console.log("Email sent successfully via Mailchimp", sendResponse);
     } catch (mailchimpError) {
-      console.error("Error sending email via Mailchimp:", mailchimpError);
+      console.error("Error sending email via Mailchimp:", JSON.stringify(mailchimpError));
       // Continue execution - we don't want to fail the feedback submission if just the email fails
     }
 

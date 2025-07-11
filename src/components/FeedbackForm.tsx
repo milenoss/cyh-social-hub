@@ -32,6 +32,7 @@ export function FeedbackForm({ trigger, challengeId, challengeTitle }: FeedbackF
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log("Submitting feedback...");
     
     const feedbackData = {
       type: formData.type,
@@ -48,6 +49,8 @@ export function FeedbackForm({ trigger, challengeId, challengeTitle }: FeedbackF
       // Use the edge function directly
       const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-feedback`;
       
+      console.log("Sending to:", apiUrl);
+      
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -58,6 +61,7 @@ export function FeedbackForm({ trigger, challengeId, challengeTitle }: FeedbackF
       });
       
       const result = await response.json();
+      console.log("Feedback response:", result);
       
       if (!result.success) {
         throw new Error("Failed to submit feedback");
