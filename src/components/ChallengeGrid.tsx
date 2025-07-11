@@ -80,13 +80,13 @@ export function ChallengeGrid() {
   }
 
   return (
-    <section className="py-16 bg-muted/30">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+    <section className="py-8 md:py-16 bg-muted/30">
+      <div className="container mx-auto px-2 md:px-4">
+        <div className="text-center mb-6 md:mb-12">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2 md:mb-4">
             Choose Your Challenge
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-4 md:mb-6">
             Every challenge is an opportunity to grow. Pick the one that scares and excites you the most.
           </p>
           {user && (
@@ -111,9 +111,9 @@ export function ChallengeGrid() {
         />
 
         {/* Search and Filters */}
-        <div className="mb-8 space-y-4">
+        <div className="mb-4 md:mb-8 space-y-3 md:space-y-4">
           {/* Search */}
-          <div className="relative max-w-md mx-auto">
+          <div className="relative max-w-xs md:max-w-md mx-auto">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search challenges..."
@@ -124,10 +124,10 @@ export function ChallengeGrid() {
           </div>
 
           {/* Filter Pills */}
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-2 md:gap-4">
             {/* Category Filter */}
-            <div className="flex flex-wrap gap-2">
-              <span className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+            <div className="flex flex-wrap gap-1 md:gap-2">
+              <span className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1">
                 <Filter className="h-3 w-3" />
                 Categories:
               </span>
@@ -135,7 +135,7 @@ export function ChallengeGrid() {
                 <Badge
                   key={category}
                   variant={selectedCategory === category ? "default" : "outline"}
-                  className="cursor-pointer transition-all hover:scale-105"
+                  className="cursor-pointer transition-all hover:scale-105 text-[10px] md:text-xs px-1.5 md:px-2"
                   onClick={() => setSelectedCategory(category)}
                 >
                   {category}
@@ -145,13 +145,13 @@ export function ChallengeGrid() {
           </div>
 
           {/* Difficulty Filter */}
-          <div className="flex flex-wrap justify-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">Difficulty:</span>
+          <div className="flex flex-wrap justify-center gap-1 md:gap-2">
+            <span className="text-xs md:text-sm font-medium text-muted-foreground">Difficulty:</span>
             {difficulties.map((difficulty) => (
               <Badge
                 key={difficulty}
                 variant={selectedDifficulty === difficulty ? "default" : "outline"}
-                className="cursor-pointer transition-all hover:scale-105"
+                className="cursor-pointer transition-all hover:scale-105 text-[10px] md:text-xs px-1.5 md:px-2"
                 onClick={() => setSelectedDifficulty(difficulty)}
               >
                 {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
@@ -161,14 +161,14 @@ export function ChallengeGrid() {
         </div>
 
         {/* Results count */}
-        <div className="text-center mb-6">
-          <p className="text-muted-foreground">
+        <div className="text-center mb-4 md:mb-6">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Showing {filteredChallenges.length} of {challenges.length} challenges
           </p>
         </div>
 
         {/* Challenge Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {filteredChallenges.map((challenge) => (
             <div key={challenge.id} className="animate-scale-in cursor-pointer" onClick={() => handleChallengeClick(challenge)}>
               <ChallengeCard 

@@ -94,14 +94,14 @@ export function ChallengeDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">{challenge.title}</DialogTitle>
+      <DialogContent className="max-w-[95vw] md:max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="p-2 md:p-4">
+          <DialogTitle className="text-xl md:text-2xl font-bold">{challenge.title}</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
+        <div className="space-y-3 md:space-y-6">
           {/* Challenge Info */}
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex flex-wrap gap-2 md:gap-4 items-center">
             <Badge className={difficultyColors[challenge.difficulty]}>
               {difficultyLabels[challenge.difficulty]}
             </Badge>
@@ -121,37 +121,37 @@ export function ChallengeDetailsModal({
           </div>
 
           {/* Tags */}
-          {challenge.tags && challenge.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1 md:gap-2">
+            {challenge.tags && challenge.tags.length > 0 && (
               {challenge.tags.map((tag, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">
                   {tag}
                 </Badge>
               ))}
-            </div>
-          )}
+            )}
+          </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-2">
+            <TabsList className="grid w-full grid-cols-3 text-xs">
               <TabsTrigger value="description">Description</TabsTrigger>
               <TabsTrigger value="participants">Participants</TabsTrigger>
               <TabsTrigger value="discussion">Discussion</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="description" className="space-y-4">
-              <div className="prose prose-sm max-w-none">
-                <p className="text-muted-foreground leading-relaxed">
+            <TabsContent value="description" className="space-y-3 md:space-y-4">
+              <div className="prose prose-sm max-w-none mt-2">
+                <p className="text-muted-foreground leading-relaxed text-sm">
                   {challenge.description}
                 </p>
               </div>
               
-              <div className="flex gap-3 pt-4">
-                <Button onClick={handleJoinChallenge} className="flex-1">
+              <div className="flex gap-2 md:gap-3 pt-2 md:pt-4">
+                <Button onClick={handleJoinChallenge} className="flex-1 text-xs md:text-sm py-1.5 md:py-2">
                   Join Challenge
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="icon"
+                  size="sm"
                   onClick={handleReportChallenge}
                   disabled={reportSubmitting}
                 >

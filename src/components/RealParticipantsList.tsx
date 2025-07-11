@@ -204,23 +204,23 @@ export function RealParticipantsList({
   return (
     <div className="space-y-3">
       {!showAsLeaderboard && (
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-3 gap-2 md:gap-4 mb-3 md:mb-4">
           <Card>
-            <CardContent className="p-3 text-center">
-              <p className="text-lg font-bold">{stats.total}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
+            <CardContent className="p-2 md:p-3 text-center">
+              <p className="text-base md:text-lg font-bold">{stats.total}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground">Total</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-3 text-center">
-              <p className="text-lg font-bold text-green-600">{stats.completed}</p>
-              <p className="text-xs text-muted-foreground">Completed</p>
+            <CardContent className="p-2 md:p-3 text-center">
+              <p className="text-base md:text-lg font-bold text-green-600">{stats.completed}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground">Completed</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-3 text-center">
-              <p className="text-lg font-bold text-blue-600">{stats.active}</p>
-              <p className="text-xs text-muted-foreground">Active</p>
+            <CardContent className="p-2 md:p-3 text-center">
+              <p className="text-base md:text-lg font-bold text-blue-600">{stats.active}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground">Active</p>
             </CardContent>
           </Card>
         </div>
@@ -231,33 +231,33 @@ export function RealParticipantsList({
           key={participant.id} 
           className={participant.user_id === currentUserId ? "border-primary/50 bg-primary/5" : ""}
         >
-          <CardContent className="p-4">
+          <CardContent className="p-2 md:p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 {showAsLeaderboard && (
-                  <div className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full">
+                  <div className="flex items-center justify-center w-6 h-6 md:w-8 md:h-8 bg-primary/10 rounded-full">
                     {getRankIcon(index + 1)}
                   </div>
                 )}
-                <Avatar className="h-10 w-10">
+                <Avatar className="h-8 w-8 md:h-10 md:w-10">
                   <AvatarImage src={participant.avatar_url || ""} />
                   <AvatarFallback>
                     {participant.display_name?.[0] || participant.username?.[0] || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{participant.display_name || participant.username}</p>
-                  <p className="text-sm text-muted-foreground">@{participant.username}</p>
+                  <p className="font-medium text-sm md:text-base">{participant.display_name || participant.username}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">@{participant.username}</p>
                   {participant.user_id === currentUserId && (
-                    <Badge variant="secondary" className="text-xs mt-1">You</Badge>
+                    <Badge variant="secondary" className="text-[10px] md:text-xs mt-1">You</Badge>
                   )}
                 </div>
               </div>
               <div className="text-right">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-1 md:gap-2 mb-0.5 md:mb-1">
                   <Badge 
                     variant={participant.status === 'completed' ? 'default' : 'secondary'}
-                    className="text-xs"
+                    className="text-[10px] md:text-xs"
                   >
                     {participant.status === 'completed' ? (
                       <>
@@ -272,17 +272,17 @@ export function RealParticipantsList({
                     )}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Progress value={participant.progress} className="w-20 h-2" />
-                  <span className="text-sm font-medium">{participant.progress}%</span>
+                <div className="flex items-center gap-1 md:gap-2">
+                  <Progress value={participant.progress} className="w-16 md:w-20 h-1.5 md:h-2" />
+                  <span className="text-xs md:text-sm font-medium">{participant.progress}%</span>
                 </div>
                 {participant.check_in_streak > 0 && (
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
                     {participant.check_in_streak} day streak
                   </p>
                 )}
                 {participant.last_check_in && (
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
                     Last active: {format(new Date(participant.last_check_in), 'MMM d')}
                   </p>
                 )}
