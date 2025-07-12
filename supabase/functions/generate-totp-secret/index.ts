@@ -21,7 +21,7 @@ serve(async (req) => {
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyemh5dm1iaWp5d3ptbHl6cG5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTk4MjI2NCwiZXhwIjoyMDY3NTU4MjY0fQ.0m5deTRSqR-wztAYFyE9HoPzH0sIzIIoMmA4DyysBVc",
       {
         auth: {
           autoRefreshToken: false,
