@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import mailchimp from "npm:@mailchimp/mailchimp_marketing@3.0.80";
+import { createClient } from "npm:@supabase/supabase-js@2.50.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,17 +39,8 @@ serve(async (req: Request) => {
     // Create Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    // Use the provided API key directly for testing
-    const mailchimpApiKey = "ed5c6f0d61049a4fd35a8874164671d1-us5";
-    const mailchimpServerPrefix = "us5"; // Hardcoded for now
     
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
-
-    // Initialize Mailchimp
-    mailchimp.setConfig({
-      apiKey: mailchimpApiKey,
-      server: mailchimpServerPrefix,
-    });
 
     // Store feedback in the database
     const { data, error } = await supabaseClient
@@ -70,49 +61,23 @@ serve(async (req: Request) => {
     if (error) throw error;
 
     try {
-      // Create an email campaign using Mailchimp
-      const campaignResponse = await mailchimp.campaigns.create({
-        type: "regular",
-        recipients: {
-          list_id: "1a0bb6c781", // Hardcoded Mailchimp audience ID
-          segment_opts: {
-            match: "all",
-            conditions: [{
-              condition_type: "EmailAddress",
-              op: "is",
-              field: "EMAIL",
-              value: "chooseyourharduk@gmail.com" // The admin email that will receive feedback
-            }]
-          }
-        },
-        settings: {
-          subject_line: `Feedback: ${subject}`,
-          title: `Feedback from ${email}`,
-          from_name: "Choose Your Hard Feedback",
-          reply_to: email,
-          auto_footer: false
-        }
+      // Send email notification using Supabase Edge Function
+      // This is a placeholder for email functionality without Mailchimp
+      console.log("Feedback received:", {
+        type,
+        subject,
+        email,
+        message,
+        challenge_id,
+        challenge_title,
+        user_id,
+        user_email
       });
       
-      // Set the content for the campaign
-      const contentResponse = await mailchimp.campaigns.setContent(campaignResponse.id, {
-        html: `
-          <h2>New Feedback Submission</h2>
-          <p><strong>Type:</strong> ${type}</p>
-          <p><strong>From:</strong> ${email}</p>
-          ${challenge_id ? `<p><strong>Challenge:</strong> ${challenge_title} (${challenge_id})</p>` : ''}
-          ${user_id ? `<p><strong>User ID:</strong> ${user_id}</p>` : ''}
-          <p><strong>Message:</strong></p>
-          <p>${message.replace(/\n/g, '<br>')}</p>
-        `
-      });
-      
-      // Send the campaign
-      const sendResponse = await mailchimp.campaigns.send(campaignResponse.id);
-      
-      console.log("Email sent successfully via Mailchimp", sendResponse);
+      // In a real implementation, you would use a different email service here
+      // For example, you could use SendGrid, AWS SES, or another email service
     } catch (mailchimpError) {
-      console.error("Error sending email via Mailchimp:", JSON.stringify(mailchimpError));
+      console.error("Error sending email notification:", JSON.stringify(mailchimpError));
       // Continue execution - we don't want to fail the feedback submission if just the email fails
     }
 
@@ -147,6 +112,3 @@ serve(async (req: Request) => {
     );
   }
 });
-
-// Import createClient from Supabase
-import { createClient } from "npm:@supabase/supabase-js@2.50.4";
