@@ -2,10 +2,10 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = 'https://srzhyvmbijywzmlyzpnh.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyemh5dm1iaWp5d3ptbHl6cG5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU3OTc2MDAsImV4cCI6MjAzMTM3MzYwMH0.Nh1Ow-_KJJiRXVRMXnRMYu_tLFyc2CYnBvBxpCFGXYE';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://srzhyvmbijywzmlyzpnh.supabase.co';
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyemh5dm1iaWp5d3ptbHl6cG5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTk4MjI2NCwiZXhwIjoyMDY3NTU4MjY0fQ.0m5deTRSqR-wztAYFyE9HoPzH0sIzIIoMmA4DyysBVc';
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.error('Missing Supabase environment variables. Please check your .env file.');
 }
 
@@ -14,7 +14,7 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 export const supabase = createClient<Database>(
   SUPABASE_URL,
-  SUPABASE_ANON_KEY,
+  SUPABASE_KEY,
   {
     auth: {
       storage: localStorage,
