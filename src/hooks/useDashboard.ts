@@ -5,7 +5,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { ChallengeWithCreator, Profile, ChallengeParticipant, ChallengeParticipationWithChallenge } from '@/lib/supabase-types';
 import { useToast } from '@/hooks/use-toast';
 
-interface DashboardStats {
+export interface DashboardStats {
   challengesCompleted: number;
   activeChallenges: number;
   currentStreak: number;
@@ -117,20 +117,32 @@ export function useDashboard() {
   };
 
   const fetchDashboardData = async () => {
-    if (!user) return;
+    console.log('🔄 fetchDashboardData called, user:', user?.id || 'null');
+    if (!user) {
+      console.log('❌ No user found, skipping data fetch');
+      setLoading(false); // Important: set loading to false even when no user
+      return;
+    }
 
+    console.log('⏳ Setting loading to true');
     setLoading(true);
     try {
+      console.log('📊 Starting parallel data fetch...');
       await Promise.all([
         fetchUserChallenges(),
         fetchParticipatedChallenges()
       ]);
+      console.log('✅ Data fetch completed successfully');
+    } catch (error) {
+      console.error('❌ Error in fetchDashboardData:', error);
     } finally {
+      console.log('🏁 Setting loading to false');
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log('🔄 useDashboard useEffect triggered, user:', user?.id || 'null');
     fetchDashboardData();
   }, [user]);
 

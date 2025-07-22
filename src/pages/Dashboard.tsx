@@ -36,6 +36,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useToast } from "@/hooks/use-toast";
 import { EmailVerificationGuard } from "@/components/EmailVerificationGuard";
 import { Navigation } from "@/components/Navigation";
+import type { DashboardStats } from "@/hooks/useDashboard";
+
+type DashboardState = {
+  userChallenges: ChallengeWithCreator[];
+  participatedChallenges: ChallengeParticipationWithChallenge[];
+  stats?: DashboardStats;
+  loading: boolean;
+};
 
 // Check for social login redirect
 const checkForSocialLoginRedirect = () => {
@@ -67,7 +75,7 @@ export default function Dashboard() {
     participatedChallenges, 
     stats, 
     loading 
-  } = useDashboard();
+  }: DashboardState = useDashboard();
   const { createChallenge, updateChallenge, deleteChallenge } = useChallenges();
   const [editingChallenge, setEditingChallenge] = useState<ChallengeWithCreator | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -130,7 +138,11 @@ export default function Dashboard() {
     return Promise.resolve(false);
   };
 
+  // Debug logging for loading states
+  console.log('🔍 Dashboard render - authLoading:', authLoading, 'loading:', loading, 'isSocialLoginRedirect:', isSocialLoginRedirect, 'user:', user?.id || 'null');
+
   if (authLoading || loading || isSocialLoginRedirect) {
+    console.log('⏳ Dashboard showing loading spinner');
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -139,6 +151,11 @@ export default function Dashboard() {
             <div className="text-center">
               <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-muted-foreground">Loading your dashboard...</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Auth: {authLoading ? 'loading' : 'ready'} | 
+                Data: {loading ? 'loading' : 'ready'} | 
+                Social: {isSocialLoginRedirect ? 'redirecting' : 'normal'}
+              </p>
             </div>
           </div>
         </div>
@@ -197,7 +214,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Completed</p>
-                    <p className="text-2xl font-bold">{stats.challengesCompleted}</p>
+                    <p className="text-2xl font-bold">{stats?.challengesCompleted ?? 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -211,7 +228,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Current Streak</p>
-                    <p className="text-2xl font-bold">{stats.currentStreak}</p>
+                    <p className="text-2xl font-bold">{stats?.currentStreak ?? 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -225,7 +242,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Active</p>
-                    <p className="text-2xl font-bold">{stats.activeChallenges}</p>
+                    <p className="text-2xl font-bold">{stats?.activeChallenges ?? 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -239,7 +256,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Points</p>
-                    <p className="text-2xl font-bold">{stats.totalPoints}</p>
+                    <p className="text-2xl font-bold">{stats?.totalPoints ?? 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -269,7 +286,7 @@ export default function Dashboard() {
               <FeedbackForm />
             </div>
 
-            {participatedChallenges.filter(p => p.status === 'active').length === 0 ? (
+            {participatedChallenges?.filter(p => p.status === 'active').length ?? 0 === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -287,60 +304,58 @@ export default function Dashboard() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {participatedChallenges
-                  .filter(p => p.status === 'active')
-                  .map((participation) => (
-                    <Card key={participation.id} className="hover:shadow-lg transition-shadow">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <Badge variant="secondary" className="text-xs">
-                            {participation.challenge.category}
-                          </Badge>
-                          <Badge className="bg-green-100 text-green-800 text-xs">
-                            Active
-                          </Badge>
+                {(participatedChallenges?.filter(p => p.status === 'active') || []).map((participation) => (
+                  <Card key={participation.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <Badge variant="secondary" className="text-xs">
+                          {participation.challenge.category}
+                        </Badge>
+                        <Badge className="bg-green-100 text-green-800 text-xs">
+                          Active
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-lg">{participation.challenge.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <span>Progress</span>
+                            <span>{participation.progress}%</span>
+                          </div>
+                          <Progress value={participation.progress} className="h-2" />
                         </div>
-                        <CardTitle className="text-lg">{participation.challenge.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div>
-                            <div className="flex justify-between text-sm mb-2">
-                              <span>Progress</span>
-                              <span>{participation.progress}%</span>
-                            </div>
-                            <Progress value={participation.progress} className="h-2" />
+                        
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{participation.challenge.duration_days} days</span> 
                           </div>
-                          
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              <span>{participation.challenge.duration_days} days</span> 
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              <span>Started {new Date(participation.started_at!).toLocaleDateString()}</span> 
-                            </div>
-                            {participation.last_check_in && (
-                            <div className="flex items-center gap-1">
-                              <CheckCircle className="h-3 w-3" />
-                              <span>Last check-in: {new Date(participation.last_check_in).toLocaleDateString()}</span>
-                            </div>
-                            )}
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>Started {new Date(participation.started_at!).toLocaleDateString()}</span> 
                           </div>
+                          {participation.last_check_in && (
+                          <div className="flex items-center gap-1">
+                            <CheckCircle className="h-3 w-3" />
+                            <span>Last check-in: {new Date(participation.last_check_in).toLocaleDateString()}</span>
+                          </div>
+                          )}
+                        </div>
 
-                          <Button 
-                            className="w-full" 
-                            variant="outline"
-                            onClick={() => setSelectedChallengeForProgress(participation)}
-                          >
-                            <Play className="h-4 w-4 mr-2" />
-                            Track Progress
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        <Button 
+                          className="w-full" 
+                          variant="outline"
+                          onClick={() => setSelectedChallengeForProgress(participation)}
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          Track Progress
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             )}
           </TabsContent>
@@ -352,7 +367,7 @@ export default function Dashboard() {
               <CreateChallengeDialog onCreateChallenge={createChallenge} />
             </div>
 
-            {userChallenges.length === 0 ? (
+            {userChallenges?.length ?? 0 === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -373,13 +388,14 @@ export default function Dashboard() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {userChallenges.map((challenge) => (
-                  <ChallengeCard 
-                    key={challenge.id} 
-                    challenge={challenge}
-                    onEdit={handleEditChallenge}
-                    onDelete={handleDeleteChallenge}
-                  />
+                {(userChallenges || []).map((challenge) => (
+                  <div key={challenge.id}>
+                    <ChallengeCard 
+                      challenge={challenge}
+                      onEdit={() => handleEditChallenge(challenge)}
+                      onDelete={() => handleDeleteChallenge(challenge.id)}
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -406,11 +422,11 @@ export default function Dashboard() {
                 <AchievementSystem 
                   userId={user.id}
                   userStats={{
-                    challengesCompleted: stats.challengesCompleted,
-                    challengesCreated: userChallenges.length,
-                    currentStreak: stats.currentStreak,
-                    longestStreak: stats.longestStreak,
-                    totalPoints: stats.totalPoints,
+                    challengesCompleted: stats?.challengesCompleted ?? 0,
+                    challengesCreated: userChallenges?.length ?? 0,
+                    currentStreak: stats?.currentStreak ?? 0,
+                    longestStreak: stats?.longestStreak ?? 0,
+                    totalPoints: stats?.totalPoints ?? 0,
                     friendsHelped: 3, // Mock data
                     commentsPosted: 12 // Mock data
                   }}
