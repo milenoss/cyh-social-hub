@@ -19,7 +19,7 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com; font-src 'self' https://cdn.fontshare.com https://fonts.gstatic.com; frame-src 'none'; connect-src 'self';"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data:; script-src 'self' 'sha256-gt/V/8ubbn9o4IK+ot6wT1Vm0fcfGx3W/NRuRQQ6JlU='; style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com; font-src 'self' https://cdn.fontshare.com https://fonts.gstatic.com; frame-src 'none'; connect-src 'self';"
 
 [[headers]]
   for = "/.well-known/apple-app-site-association"
