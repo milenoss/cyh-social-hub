@@ -18,4 +18,7 @@ assert.match(index, /Private Accountability &amp; Challenge Tracker/);
 assert.match(robots, /Sitemap: https:\/\/chooseyourhard\.co\.uk\/sitemap\.xml/);
 for (const route of ["terms", "privacy", "support", "delete-account"]) assert.match(sitemap, new RegExp(`<loc>https:\\/\\/chooseyourhard\\.co\\.uk\\/${route}<\\/loc>`));
 assert.match(app, /chooseyourharduk@gmail\.com/);
+assert.match(app, /navigator\.clipboard\.writeText/);
+assert.match(app, /document\.execCommand\("copy"\)/);
+assert.match(app, /href="#launch"/);
 console.log("Marketing routes, SEO metadata, sitemap, contact email, outcomes, and iOS association verified.");
