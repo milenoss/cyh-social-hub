@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Choose Your Hard — marketing site prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --canvas: #f3f2f2;
+      --paper: #fff;
+      --ink: #201e1d;
+      --muted: #655f5c;
+      --line: #d9d5d3;
+      --red: #ec3013;
+      --red-dark: #bd2610;
+      --mint: #72e2be;
+      --lemon: #ffe36e;
+      --lilac: #e9e2ff;
+      --danger: #b53450;
+      --display: "Satoshi", sans-serif;
+      --body: "Satoshi", sans-serif;
+      --app-display: "Bricolage Grotesque", sans-serif;
+      --app-body: "DM Sans", sans-serif;
+      --brand: "Archivo", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--canvas); font-family: var(--body); }
+    button, a { font: inherit; }
+    a { color: inherit; }
+    :focus-visible { outline: 3px solid var(--red); outline-offset: 4px; }
+
+    .site-nav {
+      position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
+      justify-content: space-between; gap: 24px; min-height: 76px; padding: 12px max(24px, calc((100vw - 1320px) / 2));
+      background: color-mix(in srgb, var(--canvas) 90%, transparent); border-bottom: 1px solid var(--line); backdrop-filter: blur(14px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand svg { width: 42px; height: 42px; }
+    .brand-name { font-family: var(--brand); font-size: 15px; font-weight: 700; letter-spacing: -.04em; line-height: .92; text-transform: uppercase; }
+    .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; font-weight: 700; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--red-dark); }
+    .status { padding: 10px 14px; border: 1px solid var(--ink); border-radius: 12px; font-family: var(--brand); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; }
+
+    .hero { min-height: calc(100dvh - 76px); overflow: hidden; border-bottom: 1px solid var(--line); }
+    .hero-grid { width: min(1320px, calc(100% - 48px)); min-height: calc(100dvh - 76px); margin: auto; display: grid; grid-template-columns: 1.08fr .92fr; align-items: center; gap: clamp(32px, 7vw, 112px); padding: 70px 0; }
+    .hero-copy { position: relative; z-index: 1; }
+    .hero h1 { max-width: 720px; margin: 0; font-family: var(--display); font-size: clamp(60px, 7.4vw, 118px); font-weight: 800; letter-spacing: -.075em; line-height: .78; }
+    .hero h1 span { display: block; color: var(--red); transform: translateX(clamp(18px, 4vw, 64px)); }
+    .hero-copy > p { max-width: 610px; margin: 42px 0 0; font-size: clamp(18px, 2vw, 24px); line-height: 1.35; }
+    .hero-copy strong { font-weight: 700; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+    .button { min-height: 54px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; border: 1.5px solid var(--ink); border-radius: 15px; font-weight: 700; text-decoration: none; transition: transform 180ms ease, background 180ms ease; }
+    .button:hover { transform: translateY(-2px); }
+    .button:active { transform: translateY(1px); }
+    .button.primary { color: #fff; background: var(--red); border-color: var(--red); }
+    .button.primary:hover { background: var(--red-dark); }
+    .button.secondary { background: var(--paper); }
+    .release-note { margin-top: 14px; color: var(--muted); font-size: 13px; }
+
+    .phone-stage { position: relative; min-height: 690px; display: grid; place-items: center; }
+    .outcome-word { position: absolute; font-family: var(--brand); font-size: clamp(58px, 6vw, 96px); font-weight: 700; letter-spacing: -.08em; text-transform: uppercase; opacity: .14; }
+    .outcome-word.one { top: 6%; right: -18%; transform: rotate(8deg); }
+    .outcome-word.two { bottom: 13%; left: -22%; transform: rotate(-8deg); }
+    .phone { position: relative; z-index: 1; width: min(382px, 87vw); padding: 12px; border: 2px solid var(--ink); border-radius: 48px; background: var(--ink); box-shadow: 16px 20px 0 rgba(32, 30, 29, .12); transform: rotate(2deg); }
+    .phone-screen { min-height: 666px; overflow: hidden; border-radius: 37px; background: var(--canvas); font-family: var(--app-body); }
+    .phone-top { display: flex; align-items: center; justify-content: space-between; padding: 25px 22px 12px; }
+    .mini-mark { width: 31px; height: 31px; }
+    .handle { color: var(--muted); font-size: 11px; font-weight: 700; }
+    .phone-content { padding: 10px 18px 22px; }
+    .phone-label, .section-label { font-family: var(--brand); font-size: 9px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    .phone-label { color: var(--red-dark); }
+    .phone-title { margin: 5px 0 16px; font-family: var(--app-display); font-size: 29px; line-height: .98; letter-spacing: -.04em; }
+    .countdown { display: grid; grid-template-columns: 82px 1fr; border-top: 8px solid var(--red); border-radius: 20px; overflow: hidden; background: var(--ink); color: #fff; }
+    .day { display: grid; place-items: center; padding: 14px 8px; background: var(--red); }
+    .day small, .finish small { font-family: var(--brand); font-size: 8px; letter-spacing: .15em; }
+    .day b { font-family: var(--app-display); font-size: 39px; line-height: 1; }
+    .finish { padding: 14px; }
+    .finish b { display: block; margin: 6px 0; font-family: var(--app-display); font-size: 18px; }
+    .progress { height: 5px; margin-top: 11px; overflow: hidden; border-radius: 5px; background: #504c4a; }
+    .progress::after { content: ""; display: block; width: 42%; height: 100%; background: var(--red); }
+    .move { margin-top: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 20px; background: var(--paper); }
+    .move h3 { margin: 5px 0; font-family: var(--app-display); font-size: 22px; }
+    .move p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .outcomes { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 12px; }
+    .outcome { min-height: 48px; display: grid; place-items: center; border: 1px solid var(--ink); border-radius: 13px; font-size: 11px; font-weight: 700; }
+    .outcome.done { color: #fff; background: var(--red); border-color: var(--red); }
+    .outcome.adapted { background: var(--lemon); }
+    .outcome.recovery { background: var(--lilac); }
+    .outcome.missed { background: #ebe8e6; }
+    .privacy { display: flex; align-items: center; gap: 7px; margin-top: 12px; color: var(--muted); font-size: 10px; }
+    .privacy::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); }
+
+    .statement { background: var(--ink); color: #fff; }
+    .statement-inner { width: min(1320px, calc(100% - 48px)); margin: auto; padding: clamp(88px, 12vw, 180px) 0; }
+    .statement p { max-width: 1120px; margin: 0; font-family: var(--display); font-size: clamp(40px, 6.7vw, 92px); font-weight: 600; letter-spacing: -.055em; line-height: .98; }
+    .statement .red { color: var(--red); }
+    .statement .mint { color: var(--mint); }
+
+    .story { width: min(1320px, calc(100% - 48px)); margin: auto; padding: 120px 0; }
+    .story-heading { display: grid; grid-template-columns: 1fr 1.2fr; gap: 50px; align-items: end; margin-bottom: 86px; }
+    .story h2 { margin: 0; font-family: var(--display); font-size: clamp(48px, 6vw, 88px); letter-spacing: -.065em; line-height: .85; }
+    .story-heading p { max-width: 540px; margin: 0 0 3px; color: var(--muted); font-size: 19px; line-height: 1.55; }
+    .story-step { display: grid; grid-template-columns: 80px minmax(240px, .7fr) 1.3fr; gap: clamp(24px, 5vw, 80px); padding: 46px 0; border-top: 1px solid var(--line); align-items: start; }
+    .step-no { font-family: var(--brand); font-size: 12px; font-weight: 700; color: var(--red-dark); }
+    .story-step h3 { margin: 0; font-family: var(--display); font-size: clamp(30px, 3vw, 46px); line-height: 1; letter-spacing: -.04em; }
+    .story-step p { max-width: 620px; margin: 0; color: var(--muted); font-size: 17px; line-height: 1.6; }
+    .state-line { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .state-line span { padding: 9px 12px; border: 1px solid var(--ink); border-radius: 10px; font-family: var(--brand); font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+    .state-line span:nth-child(1) { color: #fff; background: var(--red); border-color: var(--red); }
+    .state-line span:nth-child(2) { background: var(--lemon); }
+    .state-line span:nth-child(3) { background: var(--lilac); }
+    .state-line span:nth-child(4) { background: #ebe8e6; }
+
+    .crew { overflow: hidden; background: var(--mint); }
+    .crew-grid { width: min(1320px, calc(100% - 48px)); margin: auto; display: grid; grid-template-columns: .84fr 1.16fr; gap: clamp(48px, 8vw, 130px); align-items: center; padding: 110px 0; }
+    .crew h2 { max-width: 520px; margin: 0; font-family: var(--display); font-size: clamp(50px, 6vw, 90px); letter-spacing: -.065em; line-height: .86; }
+    .crew-copy p { max-width: 480px; font-size: 18px; line-height: 1.5; }
+    .crew-list { border: 2px solid var(--ink); background: var(--paper); box-shadow: 10px 12px 0 var(--ink); transform: rotate(-1deg); }
+    .crew-row { min-height: 98px; display: grid; grid-template-columns: 48px 1fr auto; gap: 14px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+    .crew-row:last-child { border: 0; }
+    .avatar { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: var(--lemon); font-family: var(--display); font-size: 18px; font-weight: 800; transform: rotate(-3deg); }
+    .crew-row:nth-child(2) .avatar { background: var(--lilac); }
+    .crew-row:nth-child(3) .avatar { background: var(--mint); }
+    .person { font-weight: 700; }
+    .person small { display: block; margin-top: 3px; color: var(--muted); font-weight: 500; }
+    .encourage { padding: 10px 12px; border: 1px solid var(--ink); border-radius: 11px; background: var(--canvas); font-size: 11px; font-weight: 700; }
+    .crew-foot { margin-top: 18px; font-size: 12px; font-weight: 700; text-align: center; }
+
+    .utility-page { width: min(1050px, calc(100% - 48px)); margin: auto; padding: 110px 0; border-bottom: 1px solid var(--line); }
+    .utility-page header { display: grid; grid-template-columns: .65fr 1fr; gap: 60px; margin-bottom: 60px; }
+    .utility-page h2 { margin: 0; font-family: var(--display); font-size: clamp(46px, 6vw, 78px); letter-spacing: -.06em; line-height: .9; }
+    .utility-page header p { margin: 0; color: var(--muted); font-size: 18px; line-height: 1.55; }
+    .notice { margin-bottom: 32px; padding: 18px; border: 1.5px solid var(--ink); background: var(--lemon); font-weight: 700; line-height: 1.45; }
+    .legal-layout { display: grid; grid-template-columns: 230px 1fr; gap: 58px; }
+    .toc { position: sticky; top: 100px; align-self: start; display: grid; gap: 9px; font-size: 13px; font-weight: 700; }
+    .toc a { text-decoration: none; }
+    .legal-copy { max-width: 720px; }
+    .legal-copy h3 { margin: 40px 0 10px; font-family: var(--display); font-size: 28px; }
+    .legal-copy h3:first-child { margin-top: 0; }
+    .legal-copy p, .legal-copy li { color: var(--muted); line-height: 1.72; }
+    .support-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .support-block { padding: 28px; border: 1px solid var(--line); background: var(--paper); }
+    .support-block h3 { margin: 0 0 10px; font-family: var(--display); font-size: 27px; }
+    .support-block p { color: var(--muted); line-height: 1.55; }
+    .delete-steps { margin: 28px 0; padding: 0; list-style: none; counter-reset: steps; }
+    .delete-steps li { display: grid; grid-template-columns: 45px 1fr; gap: 14px; padding: 17px 0; border-top: 1px solid var(--line); counter-increment: steps; }
+    .delete-steps li::before { content: counter(steps); width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: var(--ink); font-weight: 700; }
+
+    footer { background: var(--ink); color: #fff; }
+    .footer-inner { width: min(1320px, calc(100% - 48px)); margin: auto; display: grid; grid-template-columns: 1fr auto; gap: 40px; padding: 60px 0; align-items: end; }
+    .footer-lockup { font-family: var(--display); font-size: clamp(36px, 5vw, 68px); font-weight: 800; letter-spacing: -.055em; line-height: .9; }
+    .footer-lockup span { color: var(--red); }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 18px; font-size: 13px; font-weight: 700; }
+
+    @media (max-width: 850px) {
+      .site-nav { align-items: flex-start; }
+      .nav-links a:not(.status) { display: none; }
+      .hero-grid, .story-heading, .crew-grid, .utility-page header { grid-template-columns: 1fr; }
+      .hero-grid { padding-top: 52px; }
+      .hero h1 { font-size: clamp(58px, 18vw, 92px); }
+      .hero h1 span { transform: translateX(0); }
+      .phone-stage { min-height: 660px; }
+      .story, .utility-page { padding: 78px 0; }
+      .story-heading { margin-bottom: 52px; }
+      .story-step { grid-template-columns: 50px 1fr; }
+      .story-step p { grid-column: 2; }
+      .legal-layout { grid-template-columns: 1fr; }
+      .toc { position: static; grid-template-columns: repeat(2, 1fr); }
+      .support-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; }
+      .footer-links { justify-content: flex-start; }
+    }
+
+    @media (max-width: 520px) {
+      .site-nav { padding-inline: 16px; }
+      .status { padding: 9px; font-size: 8px; }
+      .hero-grid, .statement-inner, .story, .crew-grid, .utility-page, .footer-inner { width: min(100% - 32px, 1320px); }
+      .hero-grid { gap: 20px; padding-block: 42px 62px; }
+      .hero h1 { font-size: 57px; }
+      .hero-copy > p { margin-top: 28px; font-size: 17px; }
+      .phone-stage { min-height: 620px; }
+      .phone { width: 330px; }
+      .phone-screen { min-height: 590px; }
+      .outcome-word { display: none; }
+      .story-step { grid-template-columns: 1fr; }
+      .story-step p { grid-column: 1; }
+      .step-no { margin-bottom: -12px; }
+      .crew-row { grid-template-columns: 42px 1fr; }
+      .encourage { grid-column: 2; justify-self: start; }
+      .toc { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <a class="brand" href="#home" aria-label="Choose Your Hard home">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><path fill="#201e1d" d="M7 5h14v20h22V5h14v54H43V38H21v21H7z"/><path fill="#ec3013" d="M17 22h31v10H17z"/></svg>
+      <span class="brand-name">Choose<br>Your Hard</span>
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#crew">Crew</a>
+      <a href="#support">Support</a>
+      <a class="status" href="#launch">iPhone app in testing</a>
+    </div>
+  </nav>
+
+  <main id="home">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1 id="hero-title">Hard days <span>still count.</span></h1>
+          <p>Choose a finish line. Do today’s move. Record what really happened. <strong>No fake streaks, no shame, no pretending recovery is failure.</strong></p>
+          <div class="hero-actions">
+            <a class="button primary" href="#how">See how it works</a>
+            <a class="button secondary" href="#launch">Follow the iPhone launch</a>
+          </div>
+          <p class="release-note">Choose Your Hard is currently being tested for iPhone.</p>
+        </div>
+        <div class="phone-stage" aria-label="Choose Your Hard Today screen preview">
+          <span class="outcome-word one">Adapted</span><span class="outcome-word two">Recovery</span>
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="phone-top">
+                <svg class="mini-mark" viewBox="0 0 64 64" aria-hidden="true"><path fill="#201e1d" d="M7 5h14v20h22V5h14v54H43V38H21v21H7z"/><path fill="#ec3013" d="M17 22h31v10H17z"/></svg>
+                <span class="handle">SAMPLE PREVIEW · TODAY</span>
+              </div>
+              <div class="phone-content">
+                <span class="phone-label">Today · do the day</span>
+                <h2 class="phone-title">Run your first 5K</h2>
+                <div class="countdown">
+                  <div class="day"><small>DAY</small><b>06</b></div>
+                  <div class="finish"><small>OF 21</small><b>FINISH LINE</b><small>15 DAYS LEFT</small><div class="progress"></div></div>
+                </div>
+                <div class="move">
+                  <span class="phone-label">Today’s move</span>
+                  <h3>Walk-run for 25 minutes at an easy pace.</h3>
+                  <p>This is the app’s existing fictional sample challenge, not live member data.</p>
+                </div>
+                <div class="outcomes" aria-label="Available check-in outcomes">
+                  <span class="outcome done">I did the day</span><span class="outcome adapted">Adapted it</span>
+                  <span class="outcome recovery">Recovery</span><span class="outcome missed">Missed</span>
+                </div>
+                <div class="privacy">Your note and optional proof start private.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="statement" aria-label="Choose Your Hard principle">
+      <div class="statement-inner"><p>Consistency is not perfection. It is telling the truth, <span class="red">choosing again</span>, and letting your people <span class="mint">encourage the work.</span></p></div>
+    </section>
+
+    <section class="story" id="how" aria-labelledby="how-title">
+      <div class="story-heading">
+        <h2 id="how-title">Your hard.<br>Your clock.</h2>
+        <p>Choose Your Hard turns a vague ambition into one daily move and a finish line you can actually see.</p>
+      </div>
+      <article class="story-step">
+        <span class="step-no">01</span><h3>Choose what matters now.</h3>
+        <p>Create your own challenge, join friends privately, or enter a public challenge already moving. Your day one begins when you choose it.</p>
+      </article>
+      <article class="story-step">
+        <span class="step-no">02</span><h3>Record the real day.</h3>
+        <div><p>Done is not the only honest outcome. Adapt the plan, take deliberate recovery, or record a miss without erasing the work behind you.</p><div class="state-line"><span>Done</span><span>Adapted</span><span>Recovery</span><span>Missed</span></div></div>
+      </article>
+      <article class="story-step">
+        <span class="step-no">03</span><h3>Keep proof on your terms.</h3>
+        <p>Add a note, photo, or short private video when it helps. Sharing is optional. Public challenges show your result, while your note and proof stay private.</p>
+      </article>
+      <article class="story-step">
+        <span class="step-no">04</span><h3>Finish honestly.</h3>
+        <p>Your completed challenge and reflection stay in a private medal cabinet. No perfect-attendance gate. No leaderboard deciding whether the work counted.</p>
+      </article>
+    </section>
+
+    <section class="crew" id="crew" aria-labelledby="crew-title">
+      <div class="crew-grid">
+        <div class="crew-copy"><h2 id="crew-title">People, not pressure.</h2><p>A crew can see only what you choose to share. Like the effort. Encourage the next move. No rankings, reaction totals, or public performance theatre.</p></div>
+        <div>
+          <div class="crew-list" aria-label="Crew activity preview">
+            <div class="crew-row"><span class="avatar">SM</span><span class="person">@slowmiles<small>Checked in · Day 8</small></span><span class="encourage">Keep going</span></div>
+            <div class="crew-row"><span class="avatar">YB</span><span class="person">@yellowbib<small>Checked in after a missed day · Day 6</small></span><span class="encourage">Tomorrow is open</span></div>
+            <div class="crew-row"><span class="avatar">NF</span><span class="person">@notfastyet<small>Rest today · Day 3</small></span><span class="encourage">Recovery counts</span></div>
+          </div>
+          <div class="crew-foot">Fictional sample crew from the app preview · no counts, rankings, or reactor names.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="utility-page" id="launch" aria-labelledby="launch-title">
+      <header><h2 id="launch-title">Built for iPhone.</h2><p>The app is in active testing. This prototype deliberately avoids an App Store download claim until the public listing is live.</p></header>
+      <a class="button primary" href="mailto:chooseyourharduk@gmail.com?subject=Choose%20Your%20Hard%20launch">Ask about testing</a>
+    </section>
+
+    <section class="utility-page" id="terms" aria-labelledby="terms-title">
+      <header><h2 id="terms-title">Terms</h2><p>A readable, dedicated document with plain-language sections and a persistent contents list on larger screens.</p></header>
+      <div class="notice">Prototype content only. The current legal draft has publication holds and must receive operator approval and qualified legal review before this page goes live.</div>
+      <div class="legal-layout">
+        <nav class="toc" aria-label="Terms contents"><a href="#terms-about">About the service</a><a href="#terms-account">Eligibility and accounts</a><a href="#terms-safety">Safe use</a><a href="#terms-paid">Subscriptions</a></nav>
+        <div class="legal-copy">
+          <h3 id="terms-about">About the service</h3><p>Choose Your Hard is an accountability app for recording personal challenges, participating in crews, and keeping a private history of your work.</p>
+          <h3 id="terms-account">Eligibility and accounts</h3><p>The current product is intended for people aged 16 or older. The final policy must confirm the launch territories and minors approach.</p>
+          <h3 id="terms-safety">Use the service safely</h3><p>The app is not a healthcare provider or emergency service. Members remain responsible for choosing activities appropriate for them and adapting or stopping unsafe activity.</p>
+          <h3 id="terms-paid">Optional subscriptions</h3><p>The final page will describe the released offer, billing period, trial terms, cancellation, purchase restoration, and the fact that deleting an account does not cancel an Apple subscription.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="utility-page" id="privacy" aria-labelledby="privacy-title">
+      <header><h2 id="privacy-title">Privacy</h2><p>Privacy should explain the app’s real defaults before asking anyone to trust them.</p></header>
+      <div class="notice">Prototype content only. Hosting regions, processor terms, retention periods, transfer safeguards, and the operator’s response process still require confirmation before publication.</div>
+      <div class="legal-layout">
+        <nav class="toc" aria-label="Privacy contents"><a href="#privacy-default">Private by default</a><a href="#privacy-data">Information used</a><a href="#privacy-choice">Your choices</a><a href="#privacy-delete">Deletion</a></nav>
+        <div class="legal-copy">
+          <h3 id="privacy-default">Private by default</h3><p>Daily check-ins begin private. Members choose when supported content is shared with a crew. Public challenges expose the handle and result while notes and proof remain private.</p>
+          <h3 id="privacy-data">Information the app uses</h3><p>The service needs account, challenge, check-in, crew, subscription, and optional notification information. Optional AI requests and shared-content moderation are separate purposes.</p>
+          <h3 id="privacy-choice">Your choices</h3><p>Members can control sharing, notifications, country participation, and whether to use optional AI features. The app does not need continuous location or a contacts address book for its core flow.</p>
+          <h3 id="privacy-delete">Deleting information</h3><p>Account deletion removes account-linked data and media through the in-app process, subject to the final retention policy and limited shared challenge information needed by remaining members.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="utility-page" id="support" aria-labelledby="support-title">
+      <header><h2 id="support-title">Support</h2><p>One quiet place for account access, billing, safety, privacy, and technical help.</p></header>
+      <div class="support-grid">
+        <article class="support-block"><h3>Account and sign-in</h3><p>Help with email codes, Apple sign-in, profile setup, or getting back into an account.</p></article>
+        <article class="support-block"><h3>Purchases</h3><p>Help restoring an eligible purchase or resolving access that does not match an Apple subscription.</p></article>
+        <article class="support-block"><h3>Safety and privacy</h3><p>Ask about a moderation decision, report a concern, or make a privacy request.</p></article>
+        <article class="support-block"><h3>Something broke</h3><p>Include what you were doing, what appeared on screen, and your iPhone model if you know it.</p></article>
+      </div>
+      <div class="hero-actions"><a class="button primary" href="mailto:chooseyourharduk@gmail.com">Email support</a><a class="button secondary" href="#delete-account">Delete my account</a></div>
+    </section>
+
+    <section class="utility-page" id="delete-account" aria-labelledby="delete-title">
+      <header><h2 id="delete-title">Delete your account</h2><p>The primary route is immediate deletion inside the app. This page explains the steps and provides support when someone cannot access the app.</p></header>
+      <div class="notice">Deleting the app does not delete your account or cancel an Apple subscription. Manage the subscription separately through Apple.</div>
+      <ol class="delete-steps">
+        <li><div><strong>Open Choose Your Hard</strong><br>Sign in and open the Me tab.</div></li>
+        <li><div><strong>Find Help &amp; Legal</strong><br>Select “Delete account immediately”.</div></li>
+        <li><div><strong>Review the warning</strong><br>Your private data, media, AI history, and medals will be permanently removed.</div></li>
+        <li><div><strong>Confirm deletion</strong><br>The app asks once more before starting the irreversible process.</div></li>
+      </ol>
+      <p>If you cannot access the app, email support from the address connected to the account. Support may need proportionate information to verify the request.</p>
+      <a class="button primary" href="mailto:chooseyourharduk@gmail.com?subject=Account%20deletion%20help">Request deletion help</a>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-lockup">Choose your <span>hard.</span></div>
+      <nav class="footer-links" aria-label="Footer navigation"><a href="#terms">Terms</a><a href="#privacy">Privacy</a><a href="#support">Support</a><a href="#delete-account">Account deletion</a></nav>
+    </div>
+  </footer>
+</body>
+</html>

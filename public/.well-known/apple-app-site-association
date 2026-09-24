@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "ZB35TCWHV6.com.milen.chooseyourhard",
+        "paths": ["/join/*"]
+      }
+    ]
+  }
+}
