@@ -16,7 +16,7 @@ DM Serif Display gives the marketing headlines their journal voice. Satoshi hand
 - The iPhone-style preview is the product hero and its four outcomes are interactive.
 - Product claims and sample data come from `/Users/mk1883776/personal/choose-your-hard`.
 - No analytics, cookies, sign-in, fake App Store badge, leaderboards, or public pressure language.
-- Legal drafts stay clearly marked as pre-release until reviewed and approved.
+- Legal pages use the same visual system and prioritise readable policy text. Keep the pre-release labels until the final-publication gates pass.
 
 ## Reference
 
